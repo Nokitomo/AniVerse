@@ -24,6 +24,9 @@ keyAlias=...
 Output:
 - build/app/outputs/flutter-apk/app-release.apk
 
+Note:
+- La build debug usa applicationId con suffisso ".debug" e nome app "AniVerse Debug".
+
 ## iOS (non firmato)
 1) Installare i pod:
 - cd ios && pod install --repo-update
