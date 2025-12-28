@@ -169,6 +169,9 @@ String? _episodeLabelFromEpisodesDynamic(dynamic episodes) {
 
 String? _episodeLabelFromMap(Map json) {
   const keys = [
+    'number',
+    'ep',
+    'episodio',
     'episode',
     'episode_number',
     'ep_number',
