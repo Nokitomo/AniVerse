@@ -235,6 +235,93 @@ Future<List> popularAnime() async {
   return json['data'];
 }
 
+Future<Map<String, dynamic>> fetchTopAnimePage({
+  String? status,
+  String? type,
+  String? order,
+  bool popular = false,
+  int page = 1,
+}) async {
+  final params = <String, String>{};
+  if (status != null && status.isNotEmpty) {
+    params['status'] = status;
+  }
+  if (type != null && type.isNotEmpty) {
+    params['type'] = type;
+  }
+  if (order != null && order.isNotEmpty) {
+    params['order'] = order;
+  }
+  if (popular) {
+    params['popular'] = 'true';
+  }
+  if (page > 1) {
+    params['page'] = page.toString();
+  }
+
+  final uri = Uri.parse("$_baseHost/top-anime").replace(
+    queryParameters: params.isEmpty ? null : params,
+  );
+
+  List<Element> elements = await getElements(
+    'top-anime',
+    url: uri.toString(),
+  );
+
+  var data = elements[0].attributes['animes'];
+  if (data == null || data.isEmpty) {
+    throw Exception("Missing animes attribute");
+  }
+  var json = jsonDecode(data);
+  if (json is! Map) {
+    throw Exception("Invalid top-anime payload");
+  }
+
+  return {
+    'data': json['data'] ?? [],
+    'current_page': json['current_page'] ?? page,
+    'last_page': json['last_page'] ?? page,
+  };
+}
+
+Future<List> fetchTopAnime({
+  String? status,
+  String? type,
+  String? order,
+  bool popular = false,
+}) async {
+  final page = await fetchTopAnimePage(
+    status: status,
+    type: type,
+    order: order,
+    popular: popular,
+  );
+  return page['data'] ?? [];
+}
+
+Future<List<Map<String, dynamic>>> fetchCalendarioItems() async {
+  final document = await makeRequestAndGetDocument("$_baseHost/calendario");
+  final elements = document.getElementsByTagName('calendario-item');
+  if (elements.isEmpty) {
+    throw Exception("No calendario-item elements found");
+  }
+
+  final items = <Map<String, dynamic>>[];
+  for (final element in elements) {
+    final raw = element.attributes['a'];
+    if (raw == null || raw.isEmpty) {
+      continue;
+    }
+    final decoded = _decodeHtmlAttribute(raw);
+    final data = jsonDecode(decoded);
+    if (data is Map) {
+      items.add(data.cast<String, dynamic>());
+    }
+  }
+
+  return items;
+}
+
 Future<List> searchAnime({String title = ""}) async {
   final normalizedTitle = title.trim();
   final session = await _getAnimeunitySession();
