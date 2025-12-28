@@ -13,6 +13,7 @@ class AnimeRow extends StatefulWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final int? itemLimit;
+  final bool showProgress;
   const AnimeRow({
     super.key,
     required this.function,
@@ -21,6 +22,7 @@ class AnimeRow extends StatefulWidget {
     this.actionLabel,
     this.onAction,
     this.itemLimit,
+    this.showProgress = false,
   });
 
   @override
@@ -169,6 +171,7 @@ class _AnimeRowState extends State<AnimeRow> {
                             return coolWidget(
                               child: AnimeCard(
                                 anime: convert(data[index]),
+                                showProgress: widget.showProgress,
                               ),
                               data: convert(data[index]),
                             );

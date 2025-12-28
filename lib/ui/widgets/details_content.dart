@@ -61,6 +61,48 @@ class _DetailsContentState extends State<DetailsContent> {
     return index;
   }
 
+  String _formatSeconds(int seconds) {
+    if (seconds < 0) {
+      return '0:00';
+    }
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final secs = seconds % 60;
+    final mm = minutes.toString().padLeft(2, '0');
+    final ss = secs.toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '$hours:$mm:$ss';
+    }
+    return '$minutes:$ss';
+  }
+
+  String _resumeLabel() {
+    final index = getLatestIndex();
+    final episodeNumber = index + 1;
+    int? seconds;
+    final lastId = animeModel.episodes['_lastEpisodeId'];
+    if (lastId != null && animeModel.episodes.containsKey(lastId.toString())) {
+      final entry = animeModel.episodes[lastId.toString()];
+      if (entry is List && entry.isNotEmpty && entry[0] is int) {
+        seconds = entry[0] as int;
+      }
+    }
+    if (seconds == null &&
+        anime.episodes.isNotEmpty &&
+        index >= 0 &&
+        index < anime.episodes.length) {
+      final episodeId = anime.episodes[index]['id'];
+      final entry = animeModel.episodes[episodeId.toString()];
+      if (entry is List && entry.isNotEmpty && entry[0] is int) {
+        seconds = entry[0] as int;
+      }
+    }
+    final time = seconds != null ? _formatSeconds(seconds) : null;
+    if (time == null) {
+      return 'Riprendi Ep. $episodeNumber';
+    }
+    return 'Riprendi Ep. $episodeNumber · $time';
+  }
   @override
   void initState() {
     anime = widget.anime;
@@ -311,7 +353,7 @@ class _DetailsContentState extends State<DetailsContent> {
                                   width: 10,
                                 ),
                                 Text(
-                                  "Riprendi",
+                                  _resumeLabel(),
                                   style: TextStyle(
                                     color: Theme.of(context).colorScheme.onSecondaryContainer,
                                   ),

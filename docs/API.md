@@ -18,6 +18,7 @@ api.dart ottiene i cookie dalla home e costruisce gli header:
 ## Endpoint usati
 - Ultimi episodi in home: GET https://animeunity.so/
   Esegue parsing di <layout-items items-json="...">
+  Supporta paginazione con parametro page (es. /?page=2).
 
 - Top anime / Popolari: GET https://www.animeunity.so/top-anime?popular=true
   Esegue parsing di <top-anime animes="...">

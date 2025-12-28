@@ -235,6 +235,21 @@ Future<List> popularAnime() async {
   return json['data'];
 }
 
+Future<List> fetchLatestAnimePage({int page = 1}) async {
+  final suffix = page > 1 ? "?page=$page" : "";
+  List<Element> elements = await getElements(
+    'layout-items',
+    url: "$_baseHostNoWww/$suffix",
+  );
+
+  var data = elements[0].attributes['items-json'];
+  if (data == null || data.isEmpty) {
+    throw Exception("Missing items-json attribute");
+  }
+  var json = jsonDecode(data);
+  return json['data'];
+}
+
 Future<Map<String, dynamic>> fetchTopAnimePage({
   String? status,
   String? type,
