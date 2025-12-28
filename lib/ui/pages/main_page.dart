@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:aniverse/ui/pages/search_page.dart';
 import 'package:aniverse/ui/pages/settings_page.dart';
 import 'package:aniverse/ui/pages/home_page.dart';
+import 'package:aniverse/ui/pages/archive_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -35,6 +36,7 @@ class _MainPageState extends State<MainPage> {
         children: [
           HomePage(),
           const SearchPage(),
+          const ArchivePage(),
           SettingsPage(),
         ],
       ),
@@ -77,6 +79,17 @@ class _MainPageState extends State<MainPage> {
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
               label: "Cerca",
+            ),
+            NavigationDestination(
+              icon: Icon(
+                Icons.archive_outlined,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              selectedIcon: Icon(
+                Icons.archive,
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+              label: "Archivio",
             ),
             NavigationDestination(
               icon: Icon(

@@ -10,11 +10,15 @@ class AnimeRow extends StatefulWidget {
   final Function function;
   final String name;
   final int type;
+  final String? actionLabel;
+  final VoidCallback? onAction;
   const AnimeRow({
     super.key,
     required this.function,
     required this.name,
     required this.type,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
@@ -81,14 +85,31 @@ class _AnimeRowState extends State<AnimeRow> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          name,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onBackground,
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            fontFamily: "Roboto",
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                name,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onBackground,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "Roboto",
+                ),
+              ),
+            ),
+            if (widget.actionLabel != null && widget.onAction != null)
+              TextButton(
+                onPressed: widget.onAction,
+                child: Text(
+                  widget.actionLabel!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(
           height: 10,

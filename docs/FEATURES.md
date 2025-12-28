@@ -2,6 +2,7 @@
 
 ## Implemented
 - AnimeUnity browsing: latest, popular, search, details, episodes
+- Archivio page with filters, search, and infinite scroll
 - Video playback (Meedu player)
 - Picture-in-picture button (Android + iOS)
 - Dark / Light themes

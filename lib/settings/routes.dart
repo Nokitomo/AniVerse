@@ -6,10 +6,12 @@ import 'package:aniverse/ui/pages/main_page.dart';
 import 'package:aniverse/ui/pages/anime_detail.dart';
 import 'package:aniverse/ui/pages/error_page.dart';
 import 'package:aniverse/ui/pages/home_page.dart';
+import 'package:aniverse/ui/pages/archive_page.dart';
 
 class RouteGenerator {
   static const String mainPage = '/';
   static const String homePage = '/home';
+  static const String archivePage = '/archive';
   static const String animeDetail = '/anime';
   static const String loadAnime = '/load_anime';
   static const String error = '/error';
@@ -27,6 +29,11 @@ class RouteGenerator {
         return MaterialPageRoute(
           settings: RouteSettings(name: settings.name),
           builder: (_) => HomePage(),
+        );
+      case archivePage:
+        return MaterialPageRoute(
+          settings: RouteSettings(name: settings.name),
+          builder: (_) => const ArchivePage(),
         );
       case animeDetail:
         if (args![0] is AnimeClass && args[1] is Key) {

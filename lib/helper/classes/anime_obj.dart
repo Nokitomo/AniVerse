@@ -10,6 +10,9 @@ class AnimeClass {
   List genres;
   int episodesCount;
   String slug;
+  String type;
+  String studio;
+  int? year;
 
   DateTime? lastSeen;
 
@@ -23,6 +26,9 @@ class AnimeClass {
     required this.genres,
     required this.episodesCount,
     required this.slug,
+    this.type = '',
+    this.studio = '',
+    this.year,
     this.lastSeen,
   });
 
@@ -75,7 +81,10 @@ AnimeClass searchToObj(dynamic json) {
       status: json['status'] ?? '',
       genres: genres is List ? genres : [],
       episodesCount: json['episodes_count'] ?? 0,
-      slug: json['slug'] ?? '');
+      slug: json['slug'] ?? '',
+      type: json['type'] ?? '',
+      studio: json['studio'] ?? '',
+      year: int.tryParse((json['date'] ?? '').toString()));
 }
 
 AnimeClass popularToObj(dynamic json) {
@@ -88,7 +97,10 @@ AnimeClass popularToObj(dynamic json) {
       status: json['status'] ?? '',
       genres: [],
       episodesCount: json['episodes_count'] ?? 0,
-      slug: json['slug'] ?? '');
+      slug: json['slug'] ?? '',
+      type: json['type'] ?? '',
+      studio: json['studio'] ?? '',
+      year: int.tryParse((json['date'] ?? '').toString()));
 }
 
 AnimeClass latestToObj(dynamic json) {
@@ -101,7 +113,10 @@ AnimeClass latestToObj(dynamic json) {
       status: json["anime"]['status'] ?? '',
       genres: [],
       episodesCount: json["anime"]['episodes_count'] ?? 0,
-      slug: json["anime"]['slug'] ?? '');
+      slug: json["anime"]['slug'] ?? '',
+      type: json["anime"]['type'] ?? '',
+      studio: json["anime"]['studio'] ?? '',
+      year: int.tryParse((json["anime"]['date'] ?? '').toString()));
 }
 
 AnimeClass modelToObj(AnimeModel model) {
@@ -115,6 +130,9 @@ AnimeClass modelToObj(AnimeModel model) {
     genres: [],
     episodesCount: 0,
     slug: '',
+    type: '',
+    studio: '',
+    year: null,
     lastSeen: model.lastSeenDate,
   );
 }

@@ -35,10 +35,12 @@ class _HomePageState extends State<HomePage> {
       name: "Anime popolari",
       type: 1,
     ),
-    const AnimeRow(
+    AnimeRow(
       function: searchAnime,
       name: "Tutti gli anime",
       type: 2,
+      actionLabel: "Vedi tutti",
+      onAction: () => Get.toNamed(RouteGenerator.archivePage),
     ),
   ];
 
