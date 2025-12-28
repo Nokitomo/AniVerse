@@ -189,6 +189,21 @@ class _ArchivePageState extends State<ArchivePage> {
     });
   }
 
+  void _resetFilters() {
+    _searchDebounce?.cancel();
+    _searchController.clear();
+    setState(() {
+      _selectedGenres.clear();
+      _year = null;
+      _order = null;
+      _status = null;
+      _type = null;
+      _season = null;
+      _dubbed = false;
+    });
+    _fetch(reset: true);
+  }
+
   String _genreLabel() {
     if (_selectedGenres.isEmpty) {
       return 'Any';
@@ -725,11 +740,16 @@ class _ArchivePageState extends State<ArchivePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _gridView = true;
+              const Spacer(),
+              TextButton.icon(
+                onPressed: _resetFilters,
+                icon: const Icon(Icons.filter_alt_off),
+                label: const Text('Reset'),
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _gridView = true;
                       });
                     },
                     icon: Icon(
