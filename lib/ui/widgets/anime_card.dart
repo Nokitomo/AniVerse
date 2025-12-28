@@ -7,10 +7,12 @@ import '../../helper/classes/anime_obj.dart';
 
 class AnimeCard extends StatefulWidget {
   final AnimeClass anime;
+  final bool showProgress;
 
   const AnimeCard({
     super.key,
     required this.anime,
+    this.showProgress = false,
   });
 
   @override
@@ -141,8 +143,9 @@ class AnimeCardState extends State<AnimeCard> {
                           fontSize: 14.6,
                         ),
                       ),
-                      if (widget.anime.episodeLabel.isNotEmpty ||
-                          widget.anime.progressLabel.isNotEmpty)
+                      if (widget.showProgress &&
+                          (widget.anime.episodeLabel.isNotEmpty ||
+                              widget.anime.progressLabel.isNotEmpty))
                         Text(
                           _buildSubtitle(widget.anime),
                           textAlign: TextAlign.center,

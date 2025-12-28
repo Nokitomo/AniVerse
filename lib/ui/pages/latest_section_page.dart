@@ -1,63 +1,97 @@
 import 'package:flutter/material.dart';
 
+import '../../helper/api.dart';
 import '../../helper/classes/anime_obj.dart';
 import '../widgets/anime_card.dart';
 
-class HomeSectionArgs {
+class LatestSectionPage extends StatefulWidget {
   final String title;
-  final Future<List> Function() loader;
-  final AnimeClass Function(dynamic) converter;
-  final bool showProgress;
 
-  const HomeSectionArgs({
-    required this.title,
-    required this.loader,
-    required this.converter,
-    this.showProgress = false,
-  });
-}
-
-class HomeSectionPage extends StatefulWidget {
-  final HomeSectionArgs args;
-
-  const HomeSectionPage({
+  const LatestSectionPage({
     super.key,
-    required this.args,
+    required this.title,
   });
 
   @override
-  State<HomeSectionPage> createState() => _HomeSectionPageState();
+  State<LatestSectionPage> createState() => _LatestSectionPageState();
 }
 
-class _HomeSectionPageState extends State<HomeSectionPage> {
-  bool _loading = true;
-  bool _error = false;
+class _LatestSectionPageState extends State<LatestSectionPage> {
+  final ScrollController _scrollController = ScrollController();
   final List<AnimeClass> _items = [];
+
+  bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasMore = true;
+  bool _error = false;
+  int _page = 1;
+  int _requestId = 0;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _scrollController.addListener(_onScroll);
+    _fetch(reset: true);
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_loadingMore || !_hasMore) {
+      return;
+    }
+    if (_scrollController.position.maxScrollExtent -
+            _scrollController.position.pixels <
+        500) {
+      _fetch();
+    }
+  }
+
+  Future<void> _fetch({bool reset = false}) async {
+    if (!reset && _loadingMore) {
+      return;
+    }
+
+    final requestId = ++_requestId;
+    if (reset) {
+      _items.clear();
+      _page = 1;
+      _hasMore = true;
       _error = false;
-    });
-    try {
-      final data = await widget.args.loader();
-      final items = data.map(widget.args.converter).toList();
       setState(() {
-        _items
-          ..clear()
-          ..addAll(items);
+        _loading = true;
+      });
+    } else {
+      setState(() {
+        _loadingMore = true;
+      });
+    }
+
+    try {
+      final records = await fetchLatestAnimePage(page: _page);
+      final items = records.map(latestToObj).toList();
+      if (requestId != _requestId) {
+        return;
+      }
+      setState(() {
+        _items.addAll(items);
+        _page += 1;
+        _hasMore = items.isNotEmpty;
         _loading = false;
+        _loadingMore = false;
         _error = false;
       });
     } catch (_) {
+      if (requestId != _requestId) {
+        return;
+      }
       setState(() {
         _loading = false;
+        _loadingMore = false;
         _error = true;
       });
     }
@@ -68,11 +102,11 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: Text(widget.args.title),
+        title: Text(widget.title),
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       body: RefreshIndicator(
-        onRefresh: _load,
+        onRefresh: () => _fetch(reset: true),
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error
@@ -93,7 +127,7 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
                           ),
                         ),
                         OutlinedButton.icon(
-                          onPressed: _load,
+                          onPressed: () => _fetch(reset: true),
                           icon: const Icon(Icons.refresh),
                           label: const Text("Riprova"),
                         ),
@@ -101,6 +135,7 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
                     ),
                   )
                 : GridView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(10),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -109,12 +144,14 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
                       mainAxisSpacing: 8,
                       crossAxisSpacing: 8,
                     ),
-                    itemCount: _items.length,
+                    itemCount: _items.length + (_loadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
-                      return AnimeCard(
-                        anime: _items[index],
-                        showProgress: widget.args.showProgress,
-                      );
+                      if (index >= _items.length) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      return AnimeCard(anime: _items[index]);
                     },
                   ),
       ),

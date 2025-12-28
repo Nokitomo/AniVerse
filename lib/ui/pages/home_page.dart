@@ -9,6 +9,7 @@ import '../../helper/models/anime_model.dart';
 import '../widgets/anime_row.dart';
 import 'explore_section_page.dart';
 import 'home_section_page.dart';
+import 'latest_section_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,6 +29,7 @@ class _HomePageState extends State<HomePage> {
       function: toContinueAnime,
       name: "Riprendi a guardare",
       type: 3,
+      showProgress: true,
       actionLabel: "Vedi tutti",
       onAction: () => Get.to(
         () => HomeSectionPage(
@@ -35,6 +37,7 @@ class _HomePageState extends State<HomePage> {
             title: "Riprendi a guardare",
             loader: toContinueAnime,
             converter: (value) => modelToObj(value as AnimeModel),
+            showProgress: true,
           ),
         ),
       ),
@@ -45,12 +48,8 @@ class _HomePageState extends State<HomePage> {
       type: 0,
       actionLabel: "Vedi tutti",
       onAction: () => Get.to(
-        () => HomeSectionPage(
-          args: HomeSectionArgs(
-            title: "Ultimi episodi",
-            loader: latestAnime,
-            converter: latestToObj,
-          ),
+        () => LatestSectionPage(
+          title: "Ultimi episodi",
         ),
       ),
     ),
