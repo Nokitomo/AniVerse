@@ -111,6 +111,7 @@ flutter_launcher_icons:
   ios: true
   image_path_ios: "assets/images/splash.png"
   image_path_android: "assets/images/splash.png"
+  remove_alpha_ios: true
 
 dev_dependencies:
   flutter_test:

@@ -20,6 +20,7 @@ Works on Android and iOS (tested), probably in other platforms too.
 - Dark / Light mode
 - OTA Updates (Android)
 - Themed icon (Android)
+- iOS app icons generated without alpha (App Store requirement)
 - Swipe controls in player for volume and brightness
 - Backup / Restore database
 - Use the app and guess you'll find out :D
