@@ -18,6 +18,7 @@ class _ArchivePageState extends State<ArchivePage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   Timer? _searchDebounce;
+  int _requestId = 0;
 
   final List<AnimeClass> _items = [];
   final List<Map<String, dynamic>> _genres = [];
@@ -138,10 +139,11 @@ class _ArchivePageState extends State<ArchivePage> {
   }
 
   Future<void> _fetch({bool reset = false}) async {
-    if (_requesting || (!reset && !_hasMore)) {
+    if ((!reset && _requesting) || (!reset && !_hasMore)) {
       return;
     }
     _requesting = true;
+    final requestId = ++_requestId;
 
     if (reset) {
       _offset = 0;
@@ -174,6 +176,9 @@ class _ArchivePageState extends State<ArchivePage> {
       final total = response['total'] as int;
 
       final items = records.map(searchToObj).toList();
+      if (requestId != _requestId) {
+        return;
+      }
       setState(() {
         _totalCount = total;
         _items.addAll(items);
@@ -185,6 +190,9 @@ class _ArchivePageState extends State<ArchivePage> {
         _error = false;
       });
     } catch (_) {
+      if (requestId != _requestId) {
+        return;
+      }
       setState(() {
         _loading = false;
         _loadingMore = false;
@@ -196,7 +204,7 @@ class _ArchivePageState extends State<ArchivePage> {
 
   void _onSearchChanged(String value) {
     _searchDebounce?.cancel();
-    _searchDebounce = Timer(const Duration(milliseconds: 250), () {
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
       _fetch(reset: true);
     });
   }
