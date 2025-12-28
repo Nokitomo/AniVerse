@@ -120,7 +120,7 @@ class AnimeCardState extends State<AnimeCard> {
               ),
               Container(
                 width: 150,
-                height: 38,
+                height: 56,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.background,
                   borderRadius: const BorderRadius.only(
@@ -135,6 +135,8 @@ class AnimeCardState extends State<AnimeCard> {
                       Text(
                         widget.anime.title,
                         textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSecondaryContainer,
                           fontWeight: FontWeight.w500,
@@ -146,6 +148,8 @@ class AnimeCardState extends State<AnimeCard> {
                         Text(
                           _buildSubtitle(widget.anime),
                           textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSecondaryContainer,
                             fontWeight: FontWeight.w600,
