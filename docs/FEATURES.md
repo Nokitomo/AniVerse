@@ -6,6 +6,7 @@
 - Pagina Esplora con sezioni tematiche (top-anime e categorie archivio)
 - Pagina Calendario con programmazione per giorno
 - Riproduzione video (player Meedu)
+- Sezione "Riprendi a guardare" mostra episodio e progresso
 - Pulsante picture-in-picture (Android + iOS)
 - Tema chiaro / scuro
 - Tema dinamico (piattaforme supportate)

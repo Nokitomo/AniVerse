@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:aniverse/helper/models/anime_model.dart';
 
 class AnimeClass {
@@ -142,6 +144,29 @@ String? _episodeLabelFromEpisodes(List episodes) {
   return 'Ep. $maxValue';
 }
 
+String? _episodeLabelFromEpisodesDynamic(dynamic episodes) {
+  if (episodes is List) {
+    return _episodeLabelFromEpisodes(episodes);
+  }
+  if (episodes is String) {
+    try {
+      final decoded = jsonDecode(episodes);
+      if (decoded is List) {
+        return _episodeLabelFromEpisodes(decoded);
+      }
+      if (decoded is Map && decoded['data'] is List) {
+        return _episodeLabelFromEpisodes(decoded['data'] as List);
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+  if (episodes is Map && episodes['data'] is List) {
+    return _episodeLabelFromEpisodes(episodes['data'] as List);
+  }
+  return null;
+}
+
 String? _episodeLabelFromMap(Map json) {
   const keys = [
     'episode',
@@ -218,9 +243,7 @@ AnimeClass calendarToObj(dynamic json) {
   final obj = searchToObj(json);
   String? episodeLabel = _episodeLabelFromMap(json);
   final episodes = json['episodes'];
-  if (episodes is List) {
-    episodeLabel ??= _episodeLabelFromEpisodes(episodes);
-  }
+  episodeLabel ??= _episodeLabelFromEpisodesDynamic(episodes);
   if (episodeLabel == null) {
     final fallback =
         json['episodes_count'] ?? json['real_episodes_count'] ?? json['episode_count'];

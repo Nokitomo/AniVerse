@@ -25,6 +25,18 @@ class AnimeCardState extends State<AnimeCard> {
     super.initState();
   }
 
+  String _buildSubtitle(AnimeClass anime) {
+    final hasEpisode = anime.episodeLabel.isNotEmpty;
+    final hasProgress = anime.progressLabel.isNotEmpty;
+    if (hasEpisode && hasProgress) {
+      return '${anime.episodeLabel} · ${anime.progressLabel}';
+    }
+    if (hasEpisode) {
+      return anime.episodeLabel;
+    }
+    return anime.progressLabel;
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -129,9 +141,10 @@ class AnimeCardState extends State<AnimeCard> {
                           fontSize: 14.6,
                         ),
                       ),
-                      if (widget.anime.progressLabel.isNotEmpty)
+                      if (widget.anime.episodeLabel.isNotEmpty ||
+                          widget.anime.progressLabel.isNotEmpty)
                         Text(
-                          widget.anime.progressLabel,
+                          _buildSubtitle(widget.anime),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSecondaryContainer,
