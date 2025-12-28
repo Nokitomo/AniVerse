@@ -12,6 +12,7 @@ class AnimeRow extends StatefulWidget {
   final int type;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final int? itemLimit;
   const AnimeRow({
     super.key,
     required this.function,
@@ -19,6 +20,7 @@ class AnimeRow extends StatefulWidget {
     required this.type,
     this.actionLabel,
     this.onAction,
+    this.itemLimit,
   });
 
   @override
@@ -121,6 +123,10 @@ class _AnimeRowState extends State<AnimeRow> {
             builder: ((context, snapshot) {
               if (snapshot.hasData) {
                 var data = snapshot.data as List;
+                if (widget.itemLimit != null &&
+                    data.length > widget.itemLimit!) {
+                  data = data.take(widget.itemLimit!).toList();
+                }
                 return data.isEmpty
                     ? Center(
                         child: Column(

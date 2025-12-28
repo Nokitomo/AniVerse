@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:aniverse/ui/pages/search_page.dart';
+import 'package:aniverse/ui/pages/calendar_page.dart';
+import 'package:aniverse/ui/pages/explore_page.dart';
 import 'package:aniverse/ui/pages/settings_page.dart';
 import 'package:aniverse/ui/pages/home_page.dart';
 import 'package:aniverse/ui/pages/archive_page.dart';
@@ -35,7 +36,8 @@ class _MainPageState extends State<MainPage> {
         index: index,
         children: [
           HomePage(),
-          const SearchPage(),
+          const ExplorePage(),
+          const CalendarPage(),
           const ArchivePage(),
           SettingsPage(),
         ],
@@ -71,14 +73,25 @@ class _MainPageState extends State<MainPage> {
             ),
             NavigationDestination(
               icon: Icon(
-                Icons.search_outlined,
+                Icons.explore_outlined,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               selectedIcon: Icon(
-                Icons.search,
+                Icons.explore,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
-              label: "Cerca",
+              label: "Esplora",
+            ),
+            NavigationDestination(
+              icon: Icon(
+                Icons.calendar_today_outlined,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              selectedIcon: Icon(
+                Icons.calendar_today,
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+              label: "Calendario",
             ),
             NavigationDestination(
               icon: Icon(
