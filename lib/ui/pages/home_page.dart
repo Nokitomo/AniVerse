@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../helper/api.dart';
+import '../../helper/classes/anime_obj.dart';
+import '../../helper/models/anime_model.dart';
 import '../widgets/anime_row.dart';
 import 'explore_section_page.dart';
 import 'home_section_page.dart';
@@ -32,7 +34,7 @@ class _HomePageState extends State<HomePage> {
           args: HomeSectionArgs(
             title: "Riprendi a guardare",
             loader: toContinueAnime,
-            converter: modelToObj,
+            converter: (value) => modelToObj(value as AnimeModel),
           ),
         ),
       ),
@@ -59,7 +61,7 @@ class _HomePageState extends State<HomePage> {
       actionLabel: "Vedi tutti",
       onAction: () => Get.to(
         () => ExploreSectionPage(
-          args: const ExploreSectionArgs(
+          args: ExploreSectionArgs(
             title: "Anime popolari",
             kind: ExploreSectionKind.topAnime,
             converter: popularToObj,
