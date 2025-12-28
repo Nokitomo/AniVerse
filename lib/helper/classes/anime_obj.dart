@@ -221,6 +221,19 @@ AnimeClass latestToObj(dynamic json) {
       episodeLabel = _episodeLabelFromValue(
         episodeObj['number'] ?? episodeObj['episode'] ?? episodeObj['id'],
       );
+    } else {
+      episodeLabel = _episodeLabelFromValue(episodeObj);
+    }
+  }
+  if (episodeLabel == null) {
+    final episodes = json['episodes'];
+    episodeLabel = _episodeLabelFromEpisodesDynamic(episodes);
+  }
+  if (episodeLabel == null && json['anime'] is Map) {
+    final anime = json['anime'] as Map;
+    episodeLabel = _episodeLabelFromMap(anime);
+    if (episodeLabel == null) {
+      episodeLabel = _episodeLabelFromEpisodesDynamic(anime['episodes']);
     }
   }
   return AnimeClass(
