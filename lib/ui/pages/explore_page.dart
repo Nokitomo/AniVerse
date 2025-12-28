@@ -19,7 +19,7 @@ class _ExplorePageState extends State<ExplorePage> {
   Future<List> _fetchArchivioType(String type) async {
     final response = await fetchArchivioAnimes(
       type: type,
-      order: 'Lista A-Z',
+      order: 'Valutazione',
       offset: 0,
     );
     return response['records'] ?? [];
@@ -118,6 +118,7 @@ class _ExplorePageState extends State<ExplorePage> {
             kind: ExploreSectionKind.archivio,
             converter: searchToObj,
             type: 'TV',
+            order: 'Valutazione',
           ),
         ),
       ),
@@ -133,6 +134,7 @@ class _ExplorePageState extends State<ExplorePage> {
             kind: ExploreSectionKind.archivio,
             converter: searchToObj,
             type: 'Movie',
+            order: 'Valutazione',
           ),
         ),
       ),
@@ -148,6 +150,7 @@ class _ExplorePageState extends State<ExplorePage> {
             kind: ExploreSectionKind.archivio,
             converter: searchToObj,
             type: 'Special',
+            order: 'Valutazione',
           ),
         ),
       ),
