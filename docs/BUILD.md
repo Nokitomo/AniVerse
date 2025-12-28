@@ -1,17 +1,17 @@
-# Build
+# Compilazione
 
-## Prerequisites
-- Flutter (stable channel)
-- Dart SDK from Flutter
-- Android SDK + JDK 17 for Android builds
-- Xcode for iOS builds
+## Prerequisiti
+- Flutter (canale stable)
+- Dart SDK incluso con Flutter
+- Android SDK + JDK 17 per build Android
+- Xcode per build iOS
 
 ## Android
-1) Ensure signing is configured:
-   - android/key.properties (ignored by git)
+1) Assicurarsi che la firma sia configurata:
+   - android/key.properties (ignorato da git)
    - android/app/upload-keystore.jks
 
-Example key.properties:
+Esempio key.properties:
 storeFile=upload-keystore.jks
 storePassword=...
 keyPassword=...
@@ -24,18 +24,18 @@ keyAlias=...
 Output:
 - build/app/outputs/flutter-apk/app-release.apk
 
-## iOS (unsigned)
-1) Install pods:
+## iOS (non firmato)
+1) Installare i pod:
 - cd ios && pod install --repo-update
 
 2) Build (no codesign):
 - flutter build ios --release --no-codesign
 
-3) Package IPA (manual):
+3) Pacchettizzare IPA (manuale):
 - mkdir -p build/ios/ipa/Payload
 - cp -R build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
 - cd build/ios/ipa && zip -r AniVerse-unsigned.ipa Payload
 
-## Notes
-- iOS builds are unsigned. Use sideload tools after build.
-- Android minSdk is tied to Flutter config and NDK constraints.
+## Note
+- Le build iOS non sono firmate. Usare tool di sideload dopo la build.
+- Il minSdk Android e legato alla configurazione Flutter e ai vincoli NDK.

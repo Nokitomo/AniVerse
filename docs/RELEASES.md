@@ -1,20 +1,20 @@
-# Releases and OTA
+# Release e OTA
 
 ## Tagging
-Releases are created from git tags:
-- Tag format: vX.Y.Z (example: v1.1.13)
-- Pushing a tag triggers both iOS and Android workflows.
+Le release sono create dai tag git:
+- Formato tag: vX.Y.Z (esempio: v1.1.13)
+- Il push del tag avvia i workflow iOS e Android.
 
-## GitHub release naming
-The CI uses the tag name for the release title:
+## Naming GitHub release
+Il CI usa il nome del tag come titolo release:
 - Release v1.1.13
 
-## OTA updates (Android only)
-The app checks releases/latest and expects:
-- Release title that starts with "Release vX.Y.Z"
-- APK asset named: app-release.apk
+## Aggiornamenti OTA (solo Android)
+L'app controlla releases/latest e si aspetta:
+- Titolo release che inizi con "Release vX.Y.Z"
+- Asset APK nominato: app-release.apk
 
-The update URL is built as:
+L'URL di update viene costruito come:
 - https://github.com/Nokitomo/AniVerse/releases/download/vX.Y.Z/app-release.apk
 
-If the release title or asset name changes, OTA will fail.
+Se il titolo release o il nome asset cambiano, l'OTA fallira.

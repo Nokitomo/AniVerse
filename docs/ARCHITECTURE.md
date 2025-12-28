@@ -1,34 +1,34 @@
-# Architecture
+# Architettura
 
-## Overview
-AniVerse is a Flutter app that scrapes AnimeUnity and plays episodes using a custom video player (Meedu).
-State and navigation are handled with GetX. Local persistence is handled with ObjectBox.
+## Panoramica
+AniVerse e una app Flutter che fa scraping di AnimeUnity e riproduce episodi con un player personalizzato (Meedu).
+Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 
-## Key modules
-- lib/helper/api.dart: AnimeUnity HTTP requests, parsing, and episode/stream URL resolution.
-- lib/helper/classes/anime_obj.dart: model mapping and image URL normalization.
-- lib/services/internal_api.dart: app settings, version lookup, database import/export.
-- lib/services/internal_db.dart + lib/objectbox.g.dart: ObjectBox initialization and models.
-- lib/ui/pages: screens (home, details, settings, player, transition).
-- lib/ui/widgets: UI fragments and player widgets.
-- third_party/flutter_meedu_videoplayer: embedded video player with PiP support.
+## Moduli principali
+- lib/helper/api.dart: richieste HTTP ad AnimeUnity, parsing e risoluzione URL episodi/stream.
+- lib/helper/classes/anime_obj.dart: mapping modelli e normalizzazione URL immagini.
+- lib/services/internal_api.dart: impostazioni app, lettura versione, import/export database.
+- lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
+- lib/ui/pages: schermate (home, dettagli, impostazioni, player, transizioni).
+- lib/ui/widgets: componenti UI e widget del player.
+- third_party/flutter_meedu_videoplayer: player integrato con supporto PiP.
 
-## Data flow
-1) UI requests data via api.dart (latest, popular, search, details, episodes, stream url).
-2) api.dart fetches AnimeUnity HTML/JSON and returns normalized models.
-3) UI renders lists and details, and stores progress in ObjectBox.
-4) Player page builds Meedu controller and plays network stream URL.
-5) Settings page reads/writes local preferences and can perform OTA updates (Android only).
+## Flusso dati
+1) La UI richiede dati tramite api.dart (ultimi, popolari, ricerca, dettagli, episodi, stream url).
+2) api.dart recupera HTML/JSON da AnimeUnity e restituisce modelli normalizzati.
+3) La UI renderizza liste e dettagli, e salva i progressi in ObjectBox.
+4) La pagina player crea il controller Meedu e riproduce lo stream.
+5) La pagina impostazioni legge/scrive preferenze locali e puo eseguire OTA (solo Android).
 
-## State management
-- GetX controllers and Rx values are used for UI state and dialogs.
-- ObjectBox stores watch progress and last seen episode index.
+## Gestione stato
+- GetX controllers e valori Rx sono usati per stato UI e dialog.
+- ObjectBox salva progresso visione e ultimo episodio visto.
 
 ## Video player
-- PlayerPage uses MeeduPlayerController (lib/ui/widgets/player.dart).
-- PiP is enabled and button is visible. Auto PiP on background is disabled in code.
-- Fullscreen is forced on load.
+- PlayerPage usa MeeduPlayerController (lib/ui/widgets/player.dart).
+- PiP e abilitato e il pulsante e visibile. Auto PiP in background e disabilitato nel codice.
+- Fullscreen forzato al caricamento.
 
-## Third-party overrides
-Several packages are overridden in third_party/ to keep compatibility with Flutter/Android tooling.
-See pubspec.yaml for the override list.
+## Override third-party
+Diversi pacchetti sono sovrascritti in third_party/ per mantenere compatibilita con Flutter/Android.
+Vedi pubspec.yaml per la lista degli override.

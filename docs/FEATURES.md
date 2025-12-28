@@ -1,22 +1,22 @@
-# Features
+# Funzionalita
 
-## Implemented
-- AnimeUnity browsing: latest, popular, search, details, episodes
-- Archivio page with filters, search, and infinite scroll
-- Video playback (Meedu player)
-- Picture-in-picture button (Android + iOS)
-- Dark / Light themes
-- Dynamic theme (supported platforms)
-- OTA updates (Android only)
-- Backup / Restore ObjectBox database
-- Themed Android icon (adaptive icon)
+## Implementate
+- Navigazione AnimeUnity: ultimi, popolari, ricerca, dettagli, episodi
+- Pagina Archivio con filtri, ricerca e infinite scroll
+- Riproduzione video (player Meedu)
+- Pulsante picture-in-picture (Android + iOS)
+- Tema chiaro / scuro
+- Tema dinamico (piattaforme supportate)
+- Aggiornamenti OTA (solo Android)
+- Backup / Ripristino database ObjectBox
+- Icona Android tematizzata (adaptive icon)
 
-## Partially implemented
-- PiP auto-switch on background is disabled in code. Only manual button entry is enabled.
+## Parzialmente implementate
+- Auto PiP in background disabilitato nel codice. Solo attivazione manuale.
 
-## Not implemented
-- Chromecast / AirPlay UI (flutter_video_cast is included but not used in app UI)
+## Non implementate
+- UI Chromecast / AirPlay (flutter_video_cast e incluso ma non usato nella UI)
 
-## Known warnings
-- file_picker platform warnings appear in CI but do not block builds.
-- Some third_party plugins use deprecated Android/iOS APIs.
+## Warning noti
+- file_picker genera warning in CI ma non blocca le build.
+- Alcuni plugin in third_party usano API Android/iOS deprecate.

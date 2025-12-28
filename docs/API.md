@@ -1,52 +1,52 @@
 # API (AnimeUnity)
 
-AniVerse uses AnimeUnity public endpoints and HTML parsing.
-Base hosts:
-- https://www.animeunity.so (primary)
-- https://animeunity.so (used for home page widgets)
+AniVerse usa endpoint pubblici AnimeUnity e parsing HTML.
+Host base:
+- https://www.animeunity.so (principale)
+- https://animeunity.so (usato per i widget home)
 
-Default headers:
+Header di default:
 - Accept: application/json
-- User-Agent: iPhone Safari string
+- User-Agent: stringa iPhone Safari
 
-## Session handling
-Some endpoints require XSRF and session cookies.
-api.dart obtains cookies from the home page and builds headers:
+## Gestione sessione
+Alcuni endpoint richiedono cookie XSRF e sessione.
+api.dart ottiene i cookie dalla home e costruisce gli header:
 - X-XSRF-TOKEN
 - Cookie: XSRF-TOKEN, animeunity_session
 
-## Endpoints used
-- Home latest: GET https://animeunity.so/
-  Parses <layout-items items-json="...">
+## Endpoint usati
+- Ultimi in home: GET https://animeunity.so/
+  Esegue parsing di <layout-items items-json="...">
 
-- Popular: GET https://www.animeunity.so/top-anime?popular=true
-  Parses <top-anime animes="...">
+- Popolari: GET https://www.animeunity.so/top-anime?popular=true
+  Esegue parsing di <top-anime animes="...">
 
 - Archivio meta: GET https://www.animeunity.so/archivio?hidebar=true
-  Parses <archivio> attributes for all_genres, anime_oldest_date, tot_count.
+  Legge gli attributi <archivio> per all_genres, anime_oldest_date, tot_count.
 
-- Archivio list: POST https://www.animeunity.so/archivio/get-animes
-  JSON body: title, type, year, order, status, genres, offset, dubbed, season.
-  Returns records[] and tot.
+- Archivio lista: POST https://www.animeunity.so/archivio/get-animes
+  Body JSON: title, type, year, order, status, genres, offset, dubbed, season.
+  Ritorna records[] e tot.
 
-- Search (two-step):
+- Ricerca (due step):
   1) POST https://www.animeunity.so/livesearch (x-www-form-urlencoded)
-  2) POST https://www.animeunity.so/archivio/get-animes (JSON body)
+  2) POST https://www.animeunity.so/archivio/get-animes (JSON)
 
-- Episodes list:
+- Lista episodi:
   GET https://www.animeunity.so/info_api/{animeId}/
   GET https://www.animeunity.so/info_api/{animeId}/1?start_range=X&end_range=Y
 
-- Stream URL resolution:
+- Risoluzione URL stream:
   GET https://www.animeunity.so/embed-url/{episodeId}
-  Follow Location or body to get embed page URL
-  Parse window.downloadUrl or direct mp4/m3u8 URL from HTML
+  Segue Location o body per ottenere l'embed URL
+  Parse di window.downloadUrl o URL mp4/m3u8 dall'HTML
 
-## Image URL normalization
-Some covers return animeworld.so locandine URLs.
-anime_obj.dart maps these to AnimeUnity CDN:
+## Normalizzazione URL immagini
+Alcune cover usano locandine animeworld.so.
+anime_obj.dart le mappa al CDN AnimeUnity:
 - https://img.animeunity.so/anime/<filename>
 
-## Error behavior
-api.dart throws exceptions when a request returns empty body or non-2xx.
-Callers show an error page and allow navigation back.
+## Comportamento errori
+api.dart lancia eccezioni su risposta vuota o non-2xx.
+I chiamanti mostrano una pagina di errore e consentono il ritorno indietro.

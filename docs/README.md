@@ -1,12 +1,12 @@
-# Docs Index
+# Indice documentazione
 
-These documents describe AniVerse for external contributors.
+Questi documenti descrivono AniVerse per contributori esterni.
 
-Contents:
-- ARCHITECTURE.md: high level structure and data flow.
-- API.md: AnimeUnity integration details.
-- BUILD.md: local build steps for Android and iOS.
-- CI.md: GitHub Actions workflows and secrets.
-- RELEASES.md: tagging and release conventions (required for OTA).
-- FEATURES.md: feature list and current status.
-- TROUBLESHOOTING.md: common build/runtime issues.
+Contenuti:
+- ARCHITECTURE.md: struttura di alto livello e flusso dati.
+- API.md: dettagli integrazione AnimeUnity.
+- BUILD.md: passi di build locali per Android e iOS.
+- CI.md: workflow GitHub Actions e secret.
+- RELEASES.md: convenzioni tag e release (necessarie per OTA).
+- FEATURES.md: elenco funzionalita e stato attuale.
+- TROUBLESHOOTING.md: problemi comuni di build/runtime.

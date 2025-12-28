@@ -1,23 +1,23 @@
-# Troubleshooting
+# Risoluzione problemi
 
-## Android CI: keystore not found
-If you see:
+## Android CI: keystore non trovato
+Se vedi:
 - Keystore file ... not found
-Check that ANDROID_KEYSTORE_BASE64 is set and key.properties uses storeFile=upload-keystore.jks.
+Verifica che ANDROID_KEYSTORE_BASE64 sia impostata e che key.properties usi storeFile=upload-keystore.jks.
 
 ## Android CI: Java heap space
-Increase Gradle heap in android/gradle.properties:
+Aumenta la heap Gradle in android/gradle.properties:
 - org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g
 
-## file_picker warnings
-The file_picker package logs default implementation warnings for desktop platforms.
-These are noisy but not fatal for Android/iOS builds.
+## Warning file_picker
+Il pacchetto file_picker mostra warning per le piattaforme desktop.
+Sono rumorosi ma non fatali per build Android/iOS.
 
-## PiP not working on iOS
-- iOS 14+ required.
-- PiP is invoked only by the PiP button (auto PiP on background is disabled in app code).
-- If PiP still fails, verify AVPictureInPictureController support on the device.
+## PiP non funziona su iOS
+- Richiede iOS 14+.
+- PiP si attiva solo tramite pulsante (auto PiP in background e disabilitato nel codice).
+- Se PiP fallisce, verifica il supporto AVPictureInPictureController sul dispositivo.
 
-## Streaming fails
-- AnimeUnity endpoints may change. Check docs/API.md for current endpoints.
-- Stream URL is parsed from embed page HTML (window.downloadUrl). If AnimeUnity changes HTML, playback will fail.
+## Streaming fallisce
+- Gli endpoint AnimeUnity possono cambiare. Controlla docs/API.md.
+- L'URL stream viene parsato dalla pagina embed (window.downloadUrl). Se l'HTML cambia, la riproduzione fallira.
