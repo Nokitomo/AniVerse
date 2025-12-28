@@ -55,7 +55,7 @@ class _CalendarPageState extends State<CalendarPage> {
         final day = (item['day'] ?? '').toString().trim();
         entries.add(
           _CalendarEntry(
-            anime: searchToObj(item),
+            anime: calendarToObj(item),
             day: day.isEmpty ? 'Indeterminato' : day,
           ),
         );

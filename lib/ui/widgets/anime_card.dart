@@ -50,27 +50,59 @@ class AnimeCardState extends State<AnimeCard> {
                   topLeft: Radius.circular(7),
                   topRight: Radius.circular(7),
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(0),
-                  color: Theme.of(context).colorScheme.background,
-                  // width: 150,
+                child: SizedBox(
                   height: 202,
-                  child: Hero(
-                    key: UniqueKey(),
-                    tag: heroTag,
-                    child: CachedNetworkImage(
-                      imageUrl: widget.anime.imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      errorWidget: (context, url, error) => const Center(
-                        child: Icon(
-                          Icons.warning_amber_rounded,
-                          size: 35,
+                  child: Stack(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(0),
+                        color: Theme.of(context).colorScheme.background,
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: Hero(
+                          key: UniqueKey(),
+                          tag: heroTag,
+                          child: CachedNetworkImage(
+                            imageUrl: widget.anime.imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            errorWidget: (context, url, error) => const Center(
+                              child: Icon(
+                                Icons.warning_amber_rounded,
+                                size: 35,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (widget.anime.episodeLabel.isNotEmpty)
+                        Positioned(
+                          top: 6,
+                          right: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              widget.anime.episodeLabel,
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),

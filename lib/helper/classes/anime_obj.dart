@@ -13,6 +13,7 @@ class AnimeClass {
   String type;
   String studio;
   int? year;
+  String episodeLabel;
 
   DateTime? lastSeen;
 
@@ -30,6 +31,7 @@ class AnimeClass {
     this.studio = '',
     this.year,
     this.lastSeen,
+    this.episodeLabel = '',
   });
 
   AnimeModel getModel() {
@@ -103,7 +105,51 @@ AnimeClass popularToObj(dynamic json) {
       year: int.tryParse((json['date'] ?? '').toString()));
 }
 
+String? _episodeLabelFromValue(dynamic value) {
+  if (value == null) {
+    return null;
+  }
+  final text = value.toString().trim();
+  if (text.isEmpty) {
+    return null;
+  }
+  final match = RegExp(r'\d+').firstMatch(text);
+  if (match == null) {
+    return null;
+  }
+  return 'Ep. ${match.group(0)}';
+}
+
+String? _episodeLabelFromEpisodes(List episodes) {
+  int? maxValue;
+  for (final ep in episodes) {
+    if (ep is Map) {
+      final raw = ep['number'] ?? ep['episode'];
+      final label = _episodeLabelFromValue(raw);
+      if (label != null) {
+        final num = int.tryParse(label.replaceAll(RegExp(r'\\D'), ''));
+        if (num != null && (maxValue == null || num > maxValue)) {
+          maxValue = num;
+        }
+      }
+    }
+  }
+  if (maxValue == null) {
+    return null;
+  }
+  return 'Ep. $maxValue';
+}
+
 AnimeClass latestToObj(dynamic json) {
+  String? episodeLabel;
+  final direct = json['episode'] ?? json['episode_number'] ?? json['number'];
+  episodeLabel = _episodeLabelFromValue(direct);
+  final episodeObj = json['episode'];
+  if (episodeLabel == null && episodeObj is Map) {
+    episodeLabel = _episodeLabelFromValue(
+      episodeObj['number'] ?? episodeObj['episode'] ?? episodeObj['id'],
+    );
+  }
   return AnimeClass(
       title: json["anime"]['title'] ?? json["anime"]['title_eng'] ?? json["anime"]['title_it'] ?? '',
       imageUrl: normalizeImageUrl(json["anime"]['imageurl']),
@@ -116,7 +162,32 @@ AnimeClass latestToObj(dynamic json) {
       slug: json["anime"]['slug'] ?? '',
       type: json["anime"]['type'] ?? '',
       studio: json["anime"]['studio'] ?? '',
-      year: int.tryParse((json["anime"]['date'] ?? '').toString()));
+      year: int.tryParse((json["anime"]['date'] ?? '').toString()),
+      episodeLabel: episodeLabel ?? '');
+}
+
+AnimeClass calendarToObj(dynamic json) {
+  final obj = searchToObj(json);
+  final episodes = json['episodes'];
+  String? episodeLabel;
+  if (episodes is List) {
+    episodeLabel = _episodeLabelFromEpisodes(episodes);
+  }
+  return AnimeClass(
+    title: obj.title,
+    imageUrl: obj.imageUrl,
+    id: obj.id,
+    description: obj.description,
+    episodes: obj.episodes,
+    status: obj.status,
+    genres: obj.genres,
+    episodesCount: obj.episodesCount,
+    slug: obj.slug,
+    type: obj.type,
+    studio: obj.studio,
+    year: obj.year,
+    episodeLabel: episodeLabel ?? '',
+  );
 }
 
 AnimeClass modelToObj(AnimeModel model) {
@@ -134,6 +205,7 @@ AnimeClass modelToObj(AnimeModel model) {
     studio: '',
     year: null,
     lastSeen: model.lastSeenDate,
+    episodeLabel: '',
   );
 }
 

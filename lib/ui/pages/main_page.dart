@@ -113,7 +113,7 @@ class _MainPageState extends State<MainPage> {
                 Icons.settings,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
-              label: "Impostazioni",
+              label: "Impost.",
             ),
           ],
         ),

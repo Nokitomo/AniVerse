@@ -122,7 +122,7 @@ class _ExploreSectionPageState extends State<ExploreSectionPage> {
       } else {
         final response = await fetchArchivioAnimes(
           type: widget.args.type,
-          order: widget.args.order ?? 'Lista A-Z',
+          order: widget.args.order ?? 'Valutazione',
           offset: _offset,
         );
         final records = (response['records'] as List).cast<dynamic>();
