@@ -14,6 +14,7 @@ class AnimeClass {
   String studio;
   int? year;
   String episodeLabel;
+  String progressLabel;
 
   DateTime? lastSeen;
 
@@ -32,6 +33,7 @@ class AnimeClass {
     this.year,
     this.lastSeen,
     this.episodeLabel = '',
+    this.progressLabel = '',
   });
 
   AnimeModel getModel() {
@@ -140,15 +142,61 @@ String? _episodeLabelFromEpisodes(List episodes) {
   return 'Ep. $maxValue';
 }
 
+String? _episodeLabelFromMap(Map json) {
+  const keys = [
+    'episode',
+    'episode_number',
+    'ep_number',
+    'episode_num',
+    'last_episode',
+    'last_episode_number',
+    'last_episode_num',
+  ];
+  for (final key in keys) {
+    if (!json.containsKey(key)) {
+      continue;
+    }
+    final value = json[key];
+    if (value is Map) {
+      final nested = _episodeLabelFromValue(
+        value['number'] ?? value['episode'] ?? value['id'],
+      );
+      if (nested != null) {
+        return nested;
+      }
+    }
+    final label = _episodeLabelFromValue(value);
+    if (label != null) {
+      return label;
+    }
+  }
+  return null;
+}
+
+String _formatSeconds(int seconds) {
+  if (seconds < 0) {
+    return '0:00';
+  }
+  final hours = seconds ~/ 3600;
+  final minutes = (seconds % 3600) ~/ 60;
+  final secs = seconds % 60;
+  final mm = minutes.toString().padLeft(2, '0');
+  final ss = secs.toString().padLeft(2, '0');
+  if (hours > 0) {
+    return '$hours:$mm:$ss';
+  }
+  return '$minutes:$ss';
+}
+
 AnimeClass latestToObj(dynamic json) {
-  String? episodeLabel;
-  final direct = json['episode'] ?? json['episode_number'] ?? json['number'];
-  episodeLabel = _episodeLabelFromValue(direct);
-  final episodeObj = json['episode'];
-  if (episodeLabel == null && episodeObj is Map) {
-    episodeLabel = _episodeLabelFromValue(
-      episodeObj['number'] ?? episodeObj['episode'] ?? episodeObj['id'],
-    );
+  String? episodeLabel = _episodeLabelFromMap(json);
+  if (episodeLabel == null) {
+    final episodeObj = json['episode'];
+    if (episodeObj is Map) {
+      episodeLabel = _episodeLabelFromValue(
+        episodeObj['number'] ?? episodeObj['episode'] ?? episodeObj['id'],
+      );
+    }
   }
   return AnimeClass(
       title: json["anime"]['title'] ?? json["anime"]['title_eng'] ?? json["anime"]['title_it'] ?? '',
@@ -168,10 +216,15 @@ AnimeClass latestToObj(dynamic json) {
 
 AnimeClass calendarToObj(dynamic json) {
   final obj = searchToObj(json);
+  String? episodeLabel = _episodeLabelFromMap(json);
   final episodes = json['episodes'];
-  String? episodeLabel;
   if (episodes is List) {
-    episodeLabel = _episodeLabelFromEpisodes(episodes);
+    episodeLabel ??= _episodeLabelFromEpisodes(episodes);
+  }
+  if (episodeLabel == null) {
+    final fallback =
+        json['episodes_count'] ?? json['real_episodes_count'] ?? json['episode_count'];
+    episodeLabel = _episodeLabelFromValue(fallback);
   }
   return AnimeClass(
     title: obj.title,
@@ -191,6 +244,51 @@ AnimeClass calendarToObj(dynamic json) {
 }
 
 AnimeClass modelToObj(AnimeModel model) {
+  String progressLabel = '';
+  String episodeLabel = '';
+
+  model.decodeStr();
+
+  final lastIndex = model.lastSeenEpisodeIndex;
+  if (lastIndex != null && lastIndex >= 0) {
+    episodeLabel = 'Ep. ${lastIndex + 1}';
+  }
+
+  int? currentSeconds;
+  final lastEpisodeId = model.episodes['_lastEpisodeId'];
+  if (lastEpisodeId != null) {
+    final value = model.episodes[lastEpisodeId.toString()];
+    if (value is List && value.isNotEmpty) {
+      final raw = value[0];
+      if (raw is int) {
+        currentSeconds = raw;
+      }
+    }
+  }
+  if (currentSeconds == null) {
+    int maxSeconds = -1;
+    for (final entry in model.episodes.entries) {
+      final key = entry.key.toString();
+      if (key == '_lastEpisodeId') {
+        continue;
+      }
+      final value = entry.value;
+      if (value is List && value.isNotEmpty) {
+        final raw = value[0];
+        if (raw is int && raw > maxSeconds) {
+          maxSeconds = raw;
+        }
+      }
+    }
+    if (maxSeconds >= 0) {
+      currentSeconds = maxSeconds;
+    }
+  }
+
+  if (currentSeconds != null) {
+    progressLabel = _formatSeconds(currentSeconds);
+  }
+
   return AnimeClass(
     title: model.title ?? '',
     imageUrl: normalizeImageUrl(model.imageUrl),
@@ -205,7 +303,9 @@ AnimeClass modelToObj(AnimeModel model) {
     studio: '',
     year: null,
     lastSeen: model.lastSeenDate,
-    episodeLabel: '',
+    episodeLabel: episodeLabel,
+    progressLabel: progressLabel,
   );
 }
+
 

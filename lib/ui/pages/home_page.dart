@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 
 import '../../helper/api.dart';
 import '../widgets/anime_row.dart';
+import 'explore_section_page.dart';
+import 'home_section_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,16 +26,47 @@ class _HomePageState extends State<HomePage> {
       function: toContinueAnime,
       name: "Riprendi a guardare",
       type: 3,
+      actionLabel: "Vedi tutti",
+      onAction: () => Get.to(
+        () => HomeSectionPage(
+          args: HomeSectionArgs(
+            title: "Riprendi a guardare",
+            loader: toContinueAnime,
+            converter: modelToObj,
+          ),
+        ),
+      ),
     ),
-    const AnimeRow(
+    AnimeRow(
       function: latestAnime,
       name: "Ultimi episodi",
       type: 0,
+      actionLabel: "Vedi tutti",
+      onAction: () => Get.to(
+        () => HomeSectionPage(
+          args: HomeSectionArgs(
+            title: "Ultimi episodi",
+            loader: latestAnime,
+            converter: latestToObj,
+          ),
+        ),
+      ),
     ),
-    const AnimeRow(
+    AnimeRow(
       function: popularAnime,
       name: "Anime popolari",
       type: 1,
+      actionLabel: "Vedi tutti",
+      onAction: () => Get.to(
+        () => ExploreSectionPage(
+          args: const ExploreSectionArgs(
+            title: "Anime popolari",
+            kind: ExploreSectionKind.topAnime,
+            converter: popularToObj,
+            popular: true,
+          ),
+        ),
+      ),
     ),
     AnimeRow(
       function: searchAnime,
