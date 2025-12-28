@@ -9,7 +9,7 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 - lib/helper/classes/anime_obj.dart: mapping modelli e normalizzazione URL immagini.
 - lib/services/internal_api.dart: impostazioni app, lettura versione, import/export database.
 - lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
-- lib/ui/pages: schermate (home, dettagli, impostazioni, player, transizioni).
+- lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
 - lib/ui/widgets: componenti UI e widget del player.
 - third_party/flutter_meedu_videoplayer: player integrato con supporto PiP.
 

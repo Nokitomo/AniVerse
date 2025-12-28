@@ -32,6 +32,7 @@ screenshot/
 .pub-cache/
 .pub/
 /build/
+.cache_*
 
 # Symbolication related
 app.*.symbols
