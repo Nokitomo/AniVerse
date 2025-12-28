@@ -22,6 +22,13 @@ api.dart obtains cookies from the home page and builds headers:
 - Popular: GET https://www.animeunity.so/top-anime?popular=true
   Parses <top-anime animes="...">
 
+- Archivio meta: GET https://www.animeunity.so/archivio?hidebar=true
+  Parses <archivio> attributes for all_genres, anime_oldest_date, tot_count.
+
+- Archivio list: POST https://www.animeunity.so/archivio/get-animes
+  JSON body: title, type, year, order, status, genres, offset, dubbed, season.
+  Returns records[] and tot.
+
 - Search (two-step):
   1) POST https://www.animeunity.so/livesearch (x-www-form-urlencoded)
   2) POST https://www.animeunity.so/archivio/get-animes (JSON body)

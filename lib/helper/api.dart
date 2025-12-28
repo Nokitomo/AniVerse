@@ -81,6 +81,15 @@ Map<String, String> _buildSessionHeaders(_AnimeunitySession session) {
   return headers;
 }
 
+String _decodeHtmlAttribute(String value) {
+  return value
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#039;', "'")
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>');
+}
+
 Future<Document> makeRequestAndGetDocument(String url) async {
   try {
     final response = await http.get(
@@ -120,6 +129,82 @@ Future<List<Element>> getElements(
   } catch (e) {
     throw Exception("Failed to load elements from $url: $e");
   }
+}
+
+Future<Map<String, dynamic>> fetchArchivioMeta() async {
+  final document = await makeRequestAndGetDocument(
+    "$_baseHost/archivio?hidebar=true",
+  );
+  final elements = document.getElementsByTagName('archivio');
+  if (elements.isEmpty) {
+    throw Exception("Missing archivio tag");
+  }
+
+  final element = elements.first;
+  final rawGenres = element.attributes['all_genres'] ?? '[]';
+  final rawOldest = element.attributes['anime_oldest_date'] ?? '';
+  final rawTotal = element.attributes['tot_count'] ?? '';
+
+  final genresDecoded = _decodeHtmlAttribute(rawGenres);
+  final List genres = jsonDecode(genresDecoded);
+  final oldestYear = int.tryParse(rawOldest) ?? DateTime.now().year;
+  final total = int.tryParse(rawTotal) ?? 0;
+
+  return {
+    'genres': genres,
+    'oldestYear': oldestYear,
+    'total': total,
+  };
+}
+
+Future<Map<String, dynamic>> fetchArchivioAnimes({
+  String? title,
+  String? type,
+  int? year,
+  String? order,
+  String? status,
+  List<Map<String, dynamic>>? genres,
+  int offset = 0,
+  bool dubbed = false,
+  String? season,
+}) async {
+  final session = await _getAnimeunitySession();
+  final headers = _buildSessionHeaders(session);
+
+  final payload = {
+    "title": title?.trim().isNotEmpty == true ? title!.trim() : false,
+    "type": type ?? false,
+    "year": year ?? false,
+    "order": order ?? false,
+    "status": status ?? false,
+    "genres": genres ?? false,
+    "offset": offset,
+    "dubbed": dubbed,
+    "season": season ?? false,
+  };
+
+  final response = await http.post(
+    Uri.parse("$_baseHost/archivio/get-animes"),
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(payload),
+  );
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw Exception("HTTP ${response.statusCode} for archivio/get-animes");
+  }
+
+  final data = jsonDecode(response.body);
+  if (data is! Map) {
+    throw Exception("Invalid archivio response");
+  }
+
+  return {
+    'records': data['records'] ?? [],
+    'total': data['tot'] ?? 0,
+  };
 }
 
 Future<List> latestAnime() async {
