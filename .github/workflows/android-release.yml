@@ -49,7 +49,7 @@ jobs:
           echo "$KEYSTORE_B64" | base64 --decode 2>/dev/null > android/app/upload-keystore.jks || \
             echo "$KEYSTORE_B64" | base64 -D > android/app/upload-keystore.jks
           cat > android/key.properties <<EOF
-          storeFile=app/upload-keystore.jks
+          storeFile=upload-keystore.jks
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
