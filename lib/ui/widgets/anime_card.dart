@@ -117,14 +117,29 @@ class AnimeCardState extends State<AnimeCard> {
                   ),
                 ),
                 child: Center(
-                  child: Text(
-                    widget.anime.title,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSecondaryContainer,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14.6,
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.anime.title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14.6,
+                        ),
+                      ),
+                      if (widget.anime.progressLabel.isNotEmpty)
+                        Text(
+                          widget.anime.progressLabel,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSecondaryContainer,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               )

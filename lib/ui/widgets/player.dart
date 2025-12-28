@@ -165,6 +165,7 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     var duration = _meeduPlayerController.duration.value;
     // update the lastMinutage of the episode
     animeModel.episodes[widget.episodeId.toString()] = [current.inSeconds, duration.inSeconds];
+    animeModel.episodes['_lastEpisodeId'] = widget.episodeId;
 
     int remaining = duration.inSeconds - current.inSeconds;
     if (remaining < 120 && remaining != -1 && duration.inSeconds > 0) {
