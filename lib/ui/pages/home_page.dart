@@ -29,7 +29,6 @@ class _HomePageState extends State<HomePage> {
       function: toContinueAnime,
       name: "Riprendi a guardare",
       type: 3,
-      showProgress: true,
       actionLabel: "Vedi tutti",
       onAction: () => Get.to(
         () => HomeSectionPage(
@@ -37,7 +36,6 @@ class _HomePageState extends State<HomePage> {
             title: "Riprendi a guardare",
             loader: toContinueAnime,
             converter: (value) => modelToObj(value as AnimeModel),
-            showProgress: true,
           ),
         ),
       ),
