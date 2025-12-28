@@ -33,6 +33,7 @@ class _ArchivePageState extends State<ArchivePage> {
   bool _error = false;
   bool _gridView = false;
   bool _dubbed = false;
+  bool _showScrollToTop = false;
 
   int? _year;
   String? _order;
@@ -86,6 +87,13 @@ class _ArchivePageState extends State<ArchivePage> {
   void _onScroll() {
     if (_loadingMore || !_hasMore) {
       return;
+    }
+    final shouldShow = _scrollController.hasClients &&
+        _scrollController.position.pixels > 450;
+    if (shouldShow != _showScrollToTop) {
+      setState(() {
+        _showScrollToTop = shouldShow;
+      });
     }
     if (_scrollController.position.maxScrollExtent -
             _scrollController.position.pixels <
@@ -421,120 +429,122 @@ class _ArchivePageState extends State<ArchivePage> {
   }
 
   Widget _buildFilters() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const spacing = 12.0;
-        final fieldWidth = (constraints.maxWidth - spacing * 2) / 3;
-        return Wrap(
-          spacing: spacing,
-          runSpacing: 14,
-          children: [
-            SizedBox(
-              width: fieldWidth,
-              child: _buildFilterField(
-                label: 'Genere',
-                value: _genreLabel(),
-                onTap: _showGenresPicker,
-              ),
+    const spacing = 12.0;
+    const fieldWidth = 140.0;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(
+            width: fieldWidth,
+            child: _buildFilterField(
+              label: 'Genere',
+              value: _genreLabel(),
+              onTap: _showGenresPicker,
             ),
-            SizedBox(
-              width: fieldWidth,
-              child: _buildFilterField(
-                label: 'Anno',
-                value: _year?.toString() ?? 'Any',
-                onTap: () {
-                  _showSinglePicker<int>(
-                    title: 'Anno',
-                    options: _yearOptions,
-                    current: _year,
-                    onSelected: (value) {
-                      setState(() {
-                        _year = value;
-                      });
-                    },
-                  );
-                },
-              ),
+          ),
+          const SizedBox(width: spacing),
+          SizedBox(
+            width: fieldWidth,
+            child: _buildFilterField(
+              label: 'Anno',
+              value: _year?.toString() ?? 'Any',
+              onTap: () {
+                _showSinglePicker<int>(
+                  title: 'Anno',
+                  options: _yearOptions,
+                  current: _year,
+                  onSelected: (value) {
+                    setState(() {
+                      _year = value;
+                    });
+                  },
+                );
+              },
             ),
-            SizedBox(
-              width: fieldWidth,
-              child: _buildFilterField(
-                label: 'Ordina',
-                value: _order ?? 'Any',
-                onTap: () {
-                  _showSinglePicker<String>(
-                    title: 'Ordina',
-                    options: _orderOptions,
-                    current: _order,
-                    onSelected: (value) {
-                      setState(() {
-                        _order = value;
-                      });
-                    },
-                  );
-                },
-              ),
+          ),
+          const SizedBox(width: spacing),
+          SizedBox(
+            width: fieldWidth,
+            child: _buildFilterField(
+              label: 'Ordina',
+              value: _order ?? 'Any',
+              onTap: () {
+                _showSinglePicker<String>(
+                  title: 'Ordina',
+                  options: _orderOptions,
+                  current: _order,
+                  onSelected: (value) {
+                    setState(() {
+                      _order = value;
+                    });
+                  },
+                );
+              },
             ),
-            SizedBox(
-              width: fieldWidth,
-              child: _buildFilterField(
-                label: 'Stato',
-                value: _status ?? 'Any',
-                onTap: () {
-                  _showSinglePicker<String>(
-                    title: 'Stato',
-                    options: _statusOptions,
-                    current: _status,
-                    onSelected: (value) {
-                      setState(() {
-                        _status = value;
-                      });
-                    },
-                  );
-                },
-              ),
+          ),
+          const SizedBox(width: spacing),
+          SizedBox(
+            width: fieldWidth,
+            child: _buildFilterField(
+              label: 'Stato',
+              value: _status ?? 'Any',
+              onTap: () {
+                _showSinglePicker<String>(
+                  title: 'Stato',
+                  options: _statusOptions,
+                  current: _status,
+                  onSelected: (value) {
+                    setState(() {
+                      _status = value;
+                    });
+                  },
+                );
+              },
             ),
-            SizedBox(
-              width: fieldWidth,
-              child: _buildFilterField(
-                label: 'Tipo',
-                value: _type ?? 'Any',
-                onTap: () {
-                  _showSinglePicker<String>(
-                    title: 'Tipo',
-                    options: _typeOptions,
-                    current: _type,
-                    onSelected: (value) {
-                      setState(() {
-                        _type = value;
-                      });
-                    },
-                  );
-                },
-              ),
+          ),
+          const SizedBox(width: spacing),
+          SizedBox(
+            width: fieldWidth,
+            child: _buildFilterField(
+              label: 'Tipo',
+              value: _type ?? 'Any',
+              onTap: () {
+                _showSinglePicker<String>(
+                  title: 'Tipo',
+                  options: _typeOptions,
+                  current: _type,
+                  onSelected: (value) {
+                    setState(() {
+                      _type = value;
+                    });
+                  },
+                );
+              },
             ),
-            SizedBox(
-              width: fieldWidth,
-              child: _buildFilterField(
-                label: 'Stagione',
-                value: _season ?? 'Any',
-                onTap: () {
-                  _showSinglePicker<String>(
-                    title: 'Stagione',
-                    options: _seasonOptions,
-                    current: _season,
-                    onSelected: (value) {
-                      setState(() {
-                        _season = value;
-                      });
-                    },
-                  );
-                },
-              ),
+          ),
+          const SizedBox(width: spacing),
+          SizedBox(
+            width: fieldWidth,
+            child: _buildFilterField(
+              label: 'Stagione',
+              value: _season ?? 'Any',
+              onTap: () {
+                _showSinglePicker<String>(
+                  title: 'Stagione',
+                  options: _seasonOptions,
+                  current: _season,
+                  onSelected: (value) {
+                    setState(() {
+                      _season = value;
+                    });
+                  },
+                );
+              },
             ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 
@@ -648,6 +658,23 @@ class _ArchivePageState extends State<ArchivePage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text('Archivio'),
+      ),
+      floatingActionButton: IgnorePointer(
+        ignoring: !_showScrollToTop,
+        child: AnimatedOpacity(
+          opacity: _showScrollToTop ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: FloatingActionButton(
+            onPressed: () {
+              _scrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutCubic,
+              );
+            },
+            child: const Icon(Icons.arrow_upward),
+          ),
+        ),
       ),
       body: SafeArea(
         child: Padding(
