@@ -2,7 +2,7 @@
 
 ## Implementate
 - Navigazione AnimeUnity: ultimi, popolari, ricerca, dettagli, episodi
-- Pagina Archivio con filtri, ricerca, scroll infinito e filtri scorrevoli
+- Pagina Archivio con filtri, ricerca, scroll infinito, filtri scorrevoli e header auto-hide
 - Riproduzione video (player Meedu)
 - Pulsante picture-in-picture (Android + iOS)
 - Tema chiaro / scuro

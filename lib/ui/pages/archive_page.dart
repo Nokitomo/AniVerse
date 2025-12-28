@@ -34,6 +34,8 @@ class _ArchivePageState extends State<ArchivePage> {
   bool _gridView = false;
   bool _dubbed = false;
   bool _showScrollToTop = false;
+  bool _showHeader = true;
+  double _lastScrollOffset = 0;
 
   int? _year;
   String? _order;
@@ -88,6 +90,16 @@ class _ArchivePageState extends State<ArchivePage> {
     if (_loadingMore || !_hasMore) {
       return;
     }
+    final offset = _scrollController.hasClients
+        ? _scrollController.position.pixels
+        : 0.0;
+    final shouldShowHeader = offset <= 120;
+    if (shouldShowHeader != _showHeader) {
+      setState(() {
+        _showHeader = shouldShowHeader;
+      });
+    }
+    _lastScrollOffset = offset;
     final shouldShow = _scrollController.hasClients &&
         _scrollController.position.pixels > 450;
     if (shouldShow != _showScrollToTop) {
@@ -692,31 +704,46 @@ class _ArchivePageState extends State<ArchivePage> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: 'Cerca',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: theme.surfaceVariant,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 180),
+                    opacity: _showHeader ? 1 : 0,
+                    child: _showHeader
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextField(
+                                controller: _searchController,
+                                onChanged: _onSearchChanged,
+                                decoration: InputDecoration(
+                                  hintText: 'Cerca',
+                                  prefixIcon: const Icon(Icons.search),
+                                  filled: true,
+                                  fillColor: theme.surfaceVariant,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFilters(),
+                              const SizedBox(height: 12),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildFilters(),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(
+                Row(
+                  children: [
+                    Text(
                     'Dub ITA',
                     style: TextStyle(
                       color: theme.onBackground,
