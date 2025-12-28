@@ -5,8 +5,11 @@ import 'package:aniverse/services/internal_api.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:ota_update/ota_update.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UpdateApp extends StatelessWidget {
   UpdateApp({super.key});
@@ -14,7 +17,7 @@ class UpdateApp extends StatelessWidget {
   final InternalAPI internalAPI = Get.find<InternalAPI>();
 
   beginUpdate(version) async {
-    var url = await getLatestVersionUrl(version);
+    var url = getLatestAndroidApkUrl(version);
     var progress = 0.obs;
 
     try {
@@ -47,6 +50,150 @@ class UpdateApp extends StatelessWidget {
     }
   }
 
+  Future<File> _downloadFile(
+    String url,
+    String filename,
+    RxInt progress,
+  ) async {
+    final dir = await getTemporaryDirectory();
+    final file = File(path.join(dir.path, filename));
+    final client = http.Client();
+    final request = http.Request('GET', Uri.parse(url));
+    final response = await client.send(request);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      client.close();
+      throw Exception("HTTP ${response.statusCode}");
+    }
+
+    final totalBytes = response.contentLength ?? 0;
+    if (totalBytes > 0) {
+      progress.value = 0;
+    }
+
+    final sink = file.openWrite();
+    var receivedBytes = 0;
+    var sinkClosed = false;
+    Future<void> closeSink() async {
+      if (!sinkClosed) {
+        sinkClosed = true;
+        await sink.close();
+      }
+    }
+
+    try {
+      await response.stream.listen((chunk) {
+        receivedBytes += chunk.length;
+        sink.add(chunk);
+        if (totalBytes > 0) {
+          final pct = ((receivedBytes / totalBytes) * 100)
+              .clamp(0, 100)
+              .round();
+          if (pct != progress.value) {
+            progress.value = pct;
+          }
+        }
+      }).asFuture();
+      await closeSink();
+      client.close();
+      return file;
+    } catch (_) {
+      await closeSink();
+      client.close();
+      if (await file.exists()) {
+        await file.delete();
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _shareAndMaybeDelete(File file) async {
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: "Aggiornamento AniVerse",
+    );
+
+    final shouldDelete = await Get.dialog<bool>(
+          AlertDialog(
+            title: const Text("Pulizia file"),
+            content: const Text(
+              "Vuoi eliminare il file IPA scaricato?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Get.back(result: false);
+                },
+                child: const Text("Tieni"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Get.back(result: true);
+                },
+                child: const Text("Elimina"),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (shouldDelete) {
+      try {
+        await file.delete();
+      } catch (_) {
+        Fluttertoast.showToast(
+          msg: "Non riesco a eliminare il file scaricato.",
+        );
+      }
+    }
+  }
+
+  beginIosUpdate(version) async {
+    final url = getLatestIosIpaUrl(version);
+    final progress = (-1).obs;
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Download"),
+        content: Row(
+          children: [
+            const Text("Sto scaricando l'aggiornamento..."),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 20,
+              width: 20,
+              child: Obx(
+                () => CircularProgressIndicator(
+                  value: progress.value < 0 ? null : progress.value / 100,
+                  strokeWidth: 2.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      final file = await _downloadFile(
+        url,
+        "AniVerse-$version.ipa",
+        progress,
+      );
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      await _shareAndMaybeDelete(file);
+    } catch (_) {
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      Fluttertoast.showToast(
+        msg: "Errore durante il download dell'aggiornamento",
+      );
+    }
+  }
+
   checkUpdate() async {
     Fluttertoast.showToast(msg: "Controllo aggiornamenti...");
 
@@ -61,14 +208,14 @@ class UpdateApp extends StatelessWidget {
     }
 
     if (latest == current) {
-      Fluttertoast.showToast(msg: "L'app è già aggiornata :D");
+      Fluttertoast.showToast(msg: "L'app e' gia' aggiornata :D");
     } else {
       if (Platform.isAndroid) {
         Get.dialog(
           AlertDialog(
             title: const Text("Aggiornamento disponibile"),
             content: const Text(
-              "È disponibile un aggiornamento per l'app, vuoi aggiornare?",
+              "E' disponibile un aggiornamento per l'app, vuoi aggiornare?",
             ),
             actions: [
               TextButton(
@@ -93,28 +240,22 @@ class UpdateApp extends StatelessWidget {
           AlertDialog(
             title: const Text("Aggiornamento disponibile"),
             content: const Text(
-              "È disponibile un aggiornamento per l'app, ma visto che hai un iPhone devi aggiornare manualmente. Come? O te lo compili da solo, o mi chiedi di farlo quando ci vediamo. ¯\\_(ツ)_/¯",
+              "Su iOS l'aggiornamento viene scaricato come file IPA. Dopo il download, aprilo con LiveContainer per installare la nuova versione.",
             ),
             actions: [
               TextButton(
-                child: const Text("Voglio compilarmela ad solo"),
                 onPressed: () {
-                  Fluttertoast.showToast(
-                    msg: "Ok, allora buona fortuna :D",
-                  );
-
-                  launchUrl(
-                    Uri.parse(internalAPI.repoLink),
-                  );
-
                   Get.back();
                 },
+                child: const Text("Annulla"),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   Get.back();
+                  Fluttertoast.showToast(msg: "Download in corso...");
+                  await beginIosUpdate(latest);
                 },
-                child: const Text("Ok"),
+                child: const Text("Scarica e apri"),
               ),
             ],
           ),
@@ -156,4 +297,3 @@ class UpdateApp extends StatelessWidget {
     );
   }
 }
-

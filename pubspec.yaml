@@ -33,6 +33,7 @@ dependencies:
   fluttertoast: ^8.2.2
   url_launcher: ^6.1.11
   ota_update: ^6.0.0
+  share_plus: ^7.2.2
   file_picker: ^8.0.0+1
   permission_handler: ^11.3.1
   archive: ^3.3.7

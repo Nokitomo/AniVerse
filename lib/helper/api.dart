@@ -434,10 +434,12 @@ AnimeModel fetchAnimeModel(AnimeClass anime) {
   return toPut;
 }
 
-Future<String> getLatestVersionUrl(version) async {
-  String url = "${internalAPI.repoLink}/releases/download/$version/app-release.apk";
+String getLatestAndroidApkUrl(String version) {
+  return "${internalAPI.repoLink}/releases/download/$version/app-release.apk";
+}
 
-  return url;
+String getLatestIosIpaUrl(String version) {
+  return "${internalAPI.repoLink}/releases/download/$version/AniVerse-unsigned.ipa";
 }
 
 Future<String> getLatestVersion() async {

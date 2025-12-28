@@ -6,3 +6,4 @@ These rules are mandatory for any work on this repository.
 2) Update this file (AGENTS.md) whenever new rules, workflows, or project constraints are introduced.
 3) Keep the documentation in `docs/` in sync with the real project state. If a change affects behavior, build steps, CI, or features, update the relevant docs in the same change set.
 4) Always respond in Italian.
+5) Workflow iOS: gli aggiornamenti si gestiscono scaricando l'IPA dalle release e aprendo il file in LiveContainer.
