@@ -1,0 +1,127 @@
+name: aniverse
+description: Un app per guardare anime
+
+publish_to: "none"
+
+version: 1.1.12+1
+
+environment:
+  sdk: ">=3.3.1 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  dynamic_color: ^1.4.0
+  cached_network_image: ^3.2.1
+  html: ^0.15.0
+  expandable_widgets: ^1.0.3+1
+  animated_text_kit: ^4.2.2
+  http: ^1.2.0
+  get: ^4.6.5
+  shared_preferences: ^2.1.1
+  dynamic_themes: ^1.1.0
+  device_info_plus: ^9.1.2
+  package_info_plus: ^5.0.1
+  webview_flutter: ^4.7.0
+  objectbox: ^2.0.0
+  objectbox_flutter_libs: any
+  path: ^1.8.2
+  path_provider: ^2.0.15
+  fluttertoast: ^8.2.2
+  url_launcher: ^6.1.11
+  ota_update: ^6.0.0
+  file_picker: ^8.0.0+1
+  permission_handler: ^11.3.1
+  archive: ^3.3.7
+  cupertino_icons: ^1.0.5
+  flutter_meedu_videoplayer:
+    git:
+      url: https://github.com/aleeeee1/flutter_meedu_videoplayer.git
+      ref: ios_pip_support
+      path: ./package/
+
+  # flutter_meedu_videoplayer:
+  # path: ./forks/flutter_meedu_videoplayer/package
+
+  flutter_launcher_icons: ^0.13.1
+  flutter_video_cast:
+    git:
+      url: https://github.com/daveshirman/flutter_video_cast.git
+      ref: master
+
+dependency_overrides:
+  archive:
+    path: ./third_party/archive
+  fvp:
+    path: ./third_party/fvp
+  auto_orientation:
+    path: ./third_party/auto_orientation
+  flutter_meedu_videoplayer:
+    path: ./third_party/flutter_meedu_videoplayer
+  flutter_video_cast:
+    path: ./third_party/flutter_video_cast
+  fluttertoast:
+    path: ./third_party/fluttertoast
+  flutter_plugin_android_lifecycle: ^2.0.23
+  file_picker:
+    path: ./third_party/file_picker
+  path_provider_android:
+    path: ./third_party/path_provider_android
+  permission_handler_android:
+    path: ./third_party/permission_handler_android
+  shared_preferences_android:
+    path: ./third_party/shared_preferences_android
+  sqflite:
+    path: ./third_party/sqflite
+  url_launcher_android:
+    path: ./third_party/url_launcher_android
+  video_player_android:
+    path: ./third_party/video_player_android
+  webview_flutter_android:
+    path: ./third_party/webview_flutter_android
+  ota_update:
+    path: ./third_party/ota_update
+  video_player_avfoundation:
+    git:
+      url: https://github.com/vanlooverenkoen/flutter-packages/
+      ref: feature/#60048-ios-picture-in-picture
+      path: packages/video_player/video_player_avfoundation
+
+  video_player_platform_interface:
+    git:
+      url: https://github.com/vanlooverenkoen/flutter-packages/
+      ref: feature/#60048-ios-picture-in-picture
+      path: packages/video_player/video_player_platform_interface
+
+  video_player:
+    git:
+      url: https://github.com/vanlooverenkoen/flutter-packages/
+      ref: feature/#60048-ios-picture-in-picture
+      path: packages/video_player/video_player
+
+  url_launcher_ios: ^6.3.1
+  win32:
+    path: ./third_party/win32
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path_ios: "assets/images/splash.png"
+  image_path_android: "assets/images/splash.png"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  dependency_validator: ^3.2.2
+  flutter_lints: ^3.0.2
+  build_runner: ^2.3.3
+  objectbox_generator: any
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
