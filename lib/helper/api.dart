@@ -434,15 +434,27 @@ AnimeModel fetchAnimeModel(AnimeClass anime) {
   return toPut;
 }
 
-String getLatestAndroidApkUrl(String version) {
-  return "${internalAPI.repoLink}/releases/download/$version/app-release.apk";
+String getLatestAndroidApkUrl(String tag) {
+  return "${internalAPI.repoLink}/releases/download/$tag/app-release.apk";
 }
 
-String getLatestIosIpaUrl(String version) {
-  return "${internalAPI.repoLink}/releases/download/$version/AniVerse-unsigned.ipa";
+String getLatestIosIpaUrl(String tag) {
+  return "${internalAPI.repoLink}/releases/download/$tag/AniVerse-unsigned.ipa";
 }
 
-Future<String> getLatestVersion() async {
+String normalizeVersion(String version) {
+  var result = version.trim();
+  if (result.startsWith("v") || result.startsWith("V")) {
+    result = result.substring(1);
+  }
+  final plusIndex = result.indexOf("+");
+  if (plusIndex != -1) {
+    result = result.substring(0, plusIndex);
+  }
+  return result;
+}
+
+Future<String> getLatestReleaseTag() async {
   var url = Uri.parse(
     "${internalAPI.repoLink}/releases/latest",
   );
@@ -453,10 +465,8 @@ Future<String> getLatestVersion() async {
 
     var release = document.getElementsByTagName('h1').firstWhere((element) => element.text.startsWith("Release"));
 
-    var version = release.text.replaceAll("Release ", "");
-    // version = version.substring(0, version.indexOf("+"));
-
-    return version;
+    var tag = release.text.replaceAll("Release ", "").trim();
+    return tag;
   } catch (e) {
     return "";
   }

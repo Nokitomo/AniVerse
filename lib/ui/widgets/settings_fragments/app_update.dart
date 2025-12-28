@@ -16,8 +16,8 @@ class UpdateApp extends StatelessWidget {
 
   final InternalAPI internalAPI = Get.find<InternalAPI>();
 
-  beginUpdate(version) async {
-    var url = getLatestAndroidApkUrl(version);
+  beginUpdate(tag) async {
+    var url = getLatestAndroidApkUrl(tag);
     var progress = 0.obs;
 
     try {
@@ -147,8 +147,8 @@ class UpdateApp extends StatelessWidget {
     }
   }
 
-  beginIosUpdate(version) async {
-    final url = getLatestIosIpaUrl(version);
+  beginIosUpdate(tag) async {
+    final url = getLatestIosIpaUrl(tag);
     final progress = (-1).obs;
 
     Get.dialog(
@@ -177,7 +177,7 @@ class UpdateApp extends StatelessWidget {
     try {
       final file = await _downloadFile(
         url,
-        "AniVerse-$version.ipa",
+        "AniVerse-$tag.ipa",
         progress,
       );
       if (Get.isDialogOpen ?? false) {
@@ -197,17 +197,19 @@ class UpdateApp extends StatelessWidget {
   checkUpdate() async {
     Fluttertoast.showToast(msg: "Controllo aggiornamenti...");
 
-    String latest = await getLatestVersion();
+    String latestTag = await getLatestReleaseTag();
     String current = await internalAPI.getVersion();
+    String latest = normalizeVersion(latestTag);
+    String normalizedCurrent = normalizeVersion(current);
 
-    if (latest.isEmpty) {
+    if (latestTag.isEmpty || latest.isEmpty) {
       Fluttertoast.showToast(
         msg: "Errore durante il controllo degli aggiornamenti",
       );
       return;
     }
 
-    if (latest == current) {
+    if (latest == normalizedCurrent) {
       Fluttertoast.showToast(msg: "L'app e' gia' aggiornata :D");
     } else {
       if (Platform.isAndroid) {
@@ -228,7 +230,7 @@ class UpdateApp extends StatelessWidget {
                 onPressed: () async {
                   Get.back();
                   Fluttertoast.showToast(msg: "Download in corso...");
-                  await beginUpdate(latest);
+                  await beginUpdate(latestTag);
                 },
                 child: const Text("Aggiorna"),
               ),
@@ -253,7 +255,7 @@ class UpdateApp extends StatelessWidget {
                 onPressed: () async {
                   Get.back();
                   Fluttertoast.showToast(msg: "Download in corso...");
-                  await beginIosUpdate(latest);
+                  await beginIosUpdate(latestTag);
                 },
                 child: const Text("Scarica e apri"),
               ),
