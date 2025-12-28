@@ -49,21 +49,19 @@ class AnimeCardState extends State<AnimeCard> {
         );
       },
       child: SizedBox(
-        height: 280,
         width: 150,
         child: Card(
           elevation: 0,
           color: Theme.of(context).colorScheme.background,
           child: Column(
             children: [
-              ClipRRect(
-                clipBehavior: Clip.antiAlias,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(7),
-                  topRight: Radius.circular(7),
-                ),
-                child: SizedBox(
-                  height: 202,
+              Expanded(
+                child: ClipRRect(
+                  clipBehavior: Clip.antiAlias,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(7),
+                    topRight: Radius.circular(7),
+                  ),
                   child: Stack(
                     children: [
                       Container(
