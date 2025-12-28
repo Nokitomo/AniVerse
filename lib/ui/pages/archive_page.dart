@@ -733,19 +733,28 @@ class _ArchivePageState extends State<ArchivePage> {
                     },
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '$_totalCount risultati',
-                    style: TextStyle(
-                      color: theme.onBackground,
-                      fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Text(
+                      '$_totalCount risultati',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: theme.onBackground,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: _resetFilters,
-                icon: const Icon(Icons.filter_alt_off),
-                label: const Text('Reset'),
-              ),
+                  TextButton.icon(
+                    onPressed: _resetFilters,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(0, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: const Icon(Icons.filter_alt_off),
+                    label: const Text('Reset'),
+                  ),
               IconButton(
                 onPressed: () {
                   setState(() {
