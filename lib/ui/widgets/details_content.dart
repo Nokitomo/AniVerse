@@ -167,270 +167,286 @@ class _DetailsContentState extends State<DetailsContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            top: 15,
-            left: 8,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+    return CustomScrollView(
+      controller: _controller,
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                child: Hero(
-                  key: UniqueKey(),
-                  tag: widget.heroTag,
-                  child: CachedNetworkImage(
-                    height: 170,
-                    imageUrl: anime.imageUrl,
-                    errorWidget: (context, url, error) => const Icon(
-                      Icons.warning_amber_rounded,
-                      size: 35,
-                    ),
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 15,
+                  left: 8,
                 ),
-              ),
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        anime.title,
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onBackground,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Wrap(
-                        runSpacing: 4,
-                        spacing: 4,
-                        children: [
-                          for (var a in anime.genres)
-                            Chip(
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              labelPadding: const EdgeInsets.only(
-                                top: -6,
-                                bottom: -6,
-                                left: 5,
-                                right: 5,
-                              ),
-                              padding: const EdgeInsets.all(0),
-                              label: Text(
-                                a['name'],
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                                side: const BorderSide(
-                                  strokeAlign: BorderSide.strokeAlignOutside,
-                                ),
-                              ),
-                              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                            )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 0),
-                        child: Text(
-                          "${anime.status} - ${anime.episodesCount != 0 ? anime.episodesCount : "??"} episodi",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onBackground,
-                            fontSize: 15,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      child: Hero(
+                        key: UniqueKey(),
+                        tag: widget.heroTag,
+                        child: CachedNetworkImage(
+                          height: 170,
+                          imageUrl: anime.imageUrl,
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.warning_amber_rounded,
+                            size: 35,
                           ),
                         ),
                       ),
-                    ],
+                    ),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              anime.title,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onBackground,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Wrap(
+                              runSpacing: 4,
+                              spacing: 4,
+                              children: [
+                                for (var a in anime.genres)
+                                  Chip(
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    labelPadding: const EdgeInsets.only(
+                                      top: -6,
+                                      bottom: -6,
+                                      left: 5,
+                                      right: 5,
+                                    ),
+                                    padding: const EdgeInsets.all(0),
+                                    label: Text(
+                                      a['name'],
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      side: const BorderSide(
+                                        strokeAlign: BorderSide.strokeAlignOutside,
+                                      ),
+                                    ),
+                                    backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                                  )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 0),
+                              child: Text(
+                                "${anime.status} - ${anime.episodesCount != 0 ? anime.episodesCount : "??"} episodi",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onBackground,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                child: ExpandableText(
+                  backgroundColor: Theme.of(context).colorScheme.background,
+                  boxShadow: const [],
+                  textWidget: Text(
+                    anime.description.length > 50 ? anime.description : anime.description + " " * 50,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onBackground,
+                      fontSize: 15,
+                    ),
+                  ).copyWith(maxLines: 3),
+                  arrowWidget: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Theme.of(context).colorScheme.onBackground,
+                  ),
+                  arrowLocation: ArrowLocation.bottom,
+                  finalArrowLocation: ArrowLocation.bottom,
+                  animationDuration: const Duration(milliseconds: 300),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: episodesLoading
+                      ? const SizedBox(
+                          height: 40,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        )
+                      : episodesError
+                          ? Container(
+                              height: 40,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.errorContainer,
+                                borderRadius: BorderRadius.circular(90),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Errore nel caricamento degli episodi",
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onErrorContainer,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Obx(
+                              () => EpisodePlayer(
+                                anime: anime,
+                                controller: controller,
+                                resumeController: resumeController,
+                                resume: true,
+                                borderRadius: 90,
+                                height: 40,
+                                child: Container(
+                                  height: 40,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.secondaryContainer,
+                                    borderRadius: BorderRadius.circular(90),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      controller.error.value
+                                          ? Icon(
+                                              Icons.error,
+                                              color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                            )
+                                          : controller.loading.value
+                                              ? const SizedBox(
+                                                  height: 18,
+                                                  width: 18,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2.5,
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  Icons.play_arrow,
+                                                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                                ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        _resumeLabel(),
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: InkWell(
+                  onDoubleTap: () {
+                    _controller.animateTo(
+                      _controller.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  onTap: () {
+                    _controller.animateTo(
+                      _controller.position.minScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  child: Text(
+                    episodesLoading
+                        ? "Caricamento episodi..."
+                        : "${anime.episodes.length} episodi disponibili",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onBackground,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(
-          height: 10,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-          child: ExpandableText(
-            backgroundColor: Theme.of(context).colorScheme.background,
-            boxShadow: const [],
-            textWidget: Text(
-              anime.description.length > 50 ? anime.description : anime.description + " " * 50,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onBackground,
-                fontSize: 15,
-              ),
-            ).copyWith(maxLines: 3),
-            arrowWidget: Icon(
-              Icons.keyboard_arrow_down,
-              color: Theme.of(context).colorScheme.onBackground,
+        if (episodesLoading)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: CircularProgressIndicator(),
             ),
-            arrowLocation: ArrowLocation.bottom,
-            finalArrowLocation: ArrowLocation.bottom,
-            animationDuration: const Duration(milliseconds: 300),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(0),
-          child: SizedBox(
-            width: double.infinity,
-            child: episodesLoading
-                ? const SizedBox(
-                    height: 40,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                      ),
-                    ),
-                  )
-                : episodesError
-                    ? Container(
-                        height: 40,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(90),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Errore nel caricamento degli episodi",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onErrorContainer,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Obx(
-                        () => EpisodePlayer(
-                          anime: anime,
-                          controller: controller,
-                          resumeController: resumeController,
-                          resume: true,
-                          borderRadius: 90,
-                          height: 40,
-                          child: Container(
-                            height: 40,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.secondaryContainer,
-                              borderRadius: BorderRadius.circular(90),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                controller.error.value
-                                    ? Icon(
-                                        Icons.error,
-                                        color: Theme.of(context).colorScheme.onSecondaryContainer,
-                                      )
-                                    : controller.loading.value
-                                        ? const SizedBox(
-                                            height: 18,
-                                            width: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.5,
-                                            ),
-                                          )
-                                        : Icon(
-                                            Icons.play_arrow,
-                                            color: Theme.of(context).colorScheme.onSecondaryContainer,
-                                          ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  _resumeLabel(),
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onSecondaryContainer,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: InkWell(
-            onDoubleTap: () {
-              _controller.animateTo(
-                _controller.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-            onTap: () {
-              _controller.animateTo(
-                _controller.position.minScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-            child: Text(
-              episodesLoading
-                  ? "Caricamento episodi..."
-                  : "${anime.episodes.length} episodi disponibili",
-              textAlign: TextAlign.left,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onBackground,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
+          )
+        else if (episodesError)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Text(
+                "Impossibile caricare gli episodi",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onBackground,
+                  fontSize: 16,
+                ),
               ),
             ),
+          )
+        else
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index.isOdd) {
+                  return Divider(
+                    color: Theme.of(context).colorScheme.background,
+                    height: 6,
+                    thickness: 0,
+                  );
+                }
+                final episodeIndex = index ~/ 2;
+                return EpisodeTile(
+                  anime: anime,
+                  index: episodeIndex,
+                  resumeController: resumeController,
+                );
+              },
+              childCount: anime.episodes.isEmpty ? 0 : (anime.episodes.length * 2 - 1),
+            ),
           ),
-        ),
-        Expanded(
-          child: episodesLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : episodesError
-                  ? Center(
-                      child: Text(
-                        "Impossibile caricare gli episodi",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onBackground,
-                          fontSize: 16,
-                        ),
-                      ),
-                    )
-                  : ListView.separated(
-                      controller: _controller,
-                      physics: const BouncingScrollPhysics(),
-                      separatorBuilder: (context, index) => Divider(
-                        color: Theme.of(context).colorScheme.background,
-                        height: 6,
-                        thickness: 0,
-                      ),
-                      itemCount: anime.episodes.length,
-                      itemBuilder: (context, index) {
-                        return EpisodeTile(
-                          anime: anime,
-                          index: index,
-                          resumeController: resumeController,
-                        );
-                      },
-                    ),
-        )
       ],
     );
   }
