@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
     ),
     const AnimeRow(
       function: latestAnime,
-      name: "Ulime uscite",
+      name: "Ultimi episodi",
       type: 0,
     ),
     const AnimeRow(
