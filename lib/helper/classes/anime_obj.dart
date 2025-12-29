@@ -257,12 +257,22 @@ AnimeClass latestToObj(dynamic json) {
 
 AnimeClass calendarToObj(dynamic json) {
   final obj = searchToObj(json);
-  String? episodeLabel = _episodeLabelFromMap(json);
   final episodes = json['episodes'];
-  episodeLabel ??= _episodeLabelFromEpisodesDynamic(episodes);
-  if (episodeLabel == null) {
+  String? episodeLabel;
+  int? publishedCount;
+  final publishedLabel = _episodeLabelFromEpisodesDynamic(episodes);
+  if (publishedLabel != null) {
+    publishedCount =
+        int.tryParse(publishedLabel.replaceAll(RegExp(r'\D'), ''));
+  }
+  publishedCount ??= json['real_episodes_count'] is int
+      ? json['real_episodes_count'] as int
+      : null;
+  if (publishedCount != null && publishedCount >= 0) {
+    episodeLabel = 'Ep. ${publishedCount + 1}';
+  } else {
     final fallback =
-        json['episodes_count'] ?? json['real_episodes_count'] ?? json['episode_count'];
+        json['episodes_count'] ?? json['episode_count'];
     episodeLabel = _episodeLabelFromValue(fallback);
   }
   return AnimeClass(
