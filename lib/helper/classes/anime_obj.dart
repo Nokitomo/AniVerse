@@ -79,7 +79,7 @@ AnimeClass searchToObj(dynamic json) {
   final episodes = json['episodes'];
   final genres = json['genres'];
   return AnimeClass(
-      title: json['title'] ?? json['title_eng'] ?? json['title_it'] ?? '',
+      title: json['title_eng'] ?? json['title'] ?? json['title_it'] ?? '',
       imageUrl: normalizeImageUrl(json['imageurl']),
       id: json['id'] ?? 0,
       description: (json['plot'] ?? '').toString(), //archivio
@@ -95,7 +95,7 @@ AnimeClass searchToObj(dynamic json) {
 
 AnimeClass popularToObj(dynamic json) {
   return AnimeClass(
-      title: json['title'] ?? json['title_eng'] ?? json['title_it'] ?? '',
+      title: json['title_eng'] ?? json['title'] ?? json['title_it'] ?? '',
       imageUrl: normalizeImageUrl(json['imageurl']),
       id: json['id'] ?? 0,
       description: (json['plot'] ?? '').toString(), //popolari
@@ -240,7 +240,10 @@ AnimeClass latestToObj(dynamic json) {
     }
   }
   return AnimeClass(
-      title: json["anime"]['title'] ?? json["anime"]['title_eng'] ?? json["anime"]['title_it'] ?? '',
+      title: json["anime"]['title_eng'] ??
+          json["anime"]['title'] ??
+          json["anime"]['title_it'] ??
+          '',
       imageUrl: normalizeImageUrl(json["anime"]['imageurl']),
       id: json['anime']['id'] ?? 0,
       description: (json["anime"]['plot'] ?? '').toString(), //ultimi usciti

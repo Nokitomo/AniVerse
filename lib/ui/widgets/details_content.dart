@@ -131,7 +131,10 @@ class _DetailsContentState extends State<DetailsContent> {
               (item) => item["id"] == anime.id,
               orElse: () => results.first,
             );
-        anime.title = match["title"] ?? match["title_eng"] ?? match["title_it"] ?? anime.title;
+        anime.title = match["title_eng"] ??
+            match["title"] ??
+            match["title_it"] ??
+            anime.title;
         anime.slug = match["slug"] ?? anime.slug;
         anime.description = (match["plot"] ?? anime.description).toString();
         anime.status = match["status"] ?? anime.status;
