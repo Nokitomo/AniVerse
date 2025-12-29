@@ -71,6 +71,12 @@ String normalizeImageUrl(String? url) {
       return 'https://img.animeunity.so/anime/$filename';
     }
   }
+  if (host.contains('forbiddenlol.cloud')) {
+    final filename = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
+    if (filename.isNotEmpty) {
+      return 'https://img.animeunity.so/anime/$filename';
+    }
+  }
 
   return url;
 }

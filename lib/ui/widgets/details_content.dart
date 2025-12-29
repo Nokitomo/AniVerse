@@ -145,7 +145,7 @@ class _DetailsContentState extends State<DetailsContent> {
           anime.episodesCount = match["episodes_count"];
         }
         if (match["imageurl"] is String) {
-          anime.imageUrl = match["imageurl"];
+          anime.imageUrl = normalizeImageUrl(match["imageurl"]);
         }
       }
 
