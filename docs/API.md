@@ -16,11 +16,15 @@ api.dart ottiene i cookie dalla home e costruisce gli header:
 - Cookie: XSRF-TOKEN, animeunity_session
 
 ## Endpoint usati
-- Ultimi in home: GET https://animeunity.so/
+- Ultimi episodi in home: GET https://animeunity.so/
   Esegue parsing di <layout-items items-json="...">
 
-- Popolari: GET https://www.animeunity.so/top-anime?popular=true
+- Top anime / Popolari: GET https://www.animeunity.so/top-anime?popular=true
   Esegue parsing di <top-anime animes="...">
+  Supporta parametri: status, type, order, popular, page.
+
+- Calendario: GET https://www.animeunity.so/calendario
+  Esegue parsing di <calendario-item a="..."> e decode HTML dell'attributo.
 
 - Archivio meta: GET https://www.animeunity.so/archivio?hidebar=true
   Legge gli attributi <archivio> per all_genres, anime_oldest_date, tot_count.
