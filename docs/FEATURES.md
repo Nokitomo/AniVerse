@@ -2,6 +2,7 @@
 
 ## Implementate
 - Navigazione AnimeUnity: ultimi, popolari, ricerca, dettagli, episodi
+- Lista episodi con selezione range (blocchi da 120)
 - Pagina Archivio con filtri, ricerca, scroll infinito, filtri scorrevoli e header auto-hide
 - Pagina Esplora con sezioni tematiche (top-anime e categorie archivio)
 - Pagina Calendario con programmazione per giorno

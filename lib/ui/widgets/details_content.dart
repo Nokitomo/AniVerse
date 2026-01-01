@@ -3,13 +3,23 @@ import 'dart:ui';
 import 'package:aniverse/helper/api.dart';
 import 'package:aniverse/helper/models/anime_model.dart';
 import 'package:aniverse/ui/widgets/details_content_fragments/episode_tile.dart';
-import 'package:aniverse/ui/widgets/episode_player.dart';
+import 'package:aniverse/ui/widgets/player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expandable_widgets/expandable_widgets.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aniverse/helper/classes/anime_obj.dart';
+import 'package:aniverse/services/internal_db.dart';
 import 'package:get/get.dart';
+
+class _EpisodeRange {
+  final int start;
+  final int end;
+
+  const _EpisodeRange(this.start, this.end);
+
+  String get label => '$start-$end';
+}
 
 class DetailsContent extends StatefulWidget {
   final AnimeClass anime;
@@ -31,36 +41,19 @@ class _DetailsContentState extends State<DetailsContent> {
   bool episodesLoading = true;
   bool episodesError = false;
 
-  int getRemaining(int index) {
-    if (anime.episodes.isEmpty || index < 0 || index >= anime.episodes.length) {
-      return -1;
-    }
-    if (animeModel.episodes.containsKey(anime.episodes[index]['id'].toString())) {
-      var currTime = animeModel.episodes[anime.episodes[index]['id'].toString()][0];
-      var totTime = animeModel.episodes[anime.episodes[index]['id'].toString()][1];
-
-      return totTime - currTime;
-    }
-
-    return -1;
-  }
+  static const int _rangeSize = 120;
+  int _rangeStart = 1;
+  int _rangeEnd = _rangeSize;
+  int _totalEpisodes = 0;
+  int? _pendingResumeIndex;
 
   int getLatestIndex() {
-    if (anime.episodes.isEmpty) {
-      return 0;
+    final lastIndex = animeModel.lastSeenEpisodeIndex ?? 0;
+    final total = _totalEpisodes > 0 ? _totalEpisodes : anime.episodesCount;
+    if (total > 0) {
+      return lastIndex.clamp(0, total - 1);
     }
-    int index = animeModel.lastSeenEpisodeIndex ?? 0;
-    debugPrint("index prima: $index");
-
-    int remaining = getRemaining(index);
-
-    if (remaining < 120 && remaining != -1) {
-      index = index + 1;
-    }
-
-    index %= (anime.episodes.length - 1) > 0 ? (anime.episodes.length - 1) : 1;
-    debugPrint("index dopo: $index");
-    return index;
+    return lastIndex < 0 ? 0 : lastIndex;
   }
 
   String _formatSeconds(int seconds) {
@@ -89,22 +82,138 @@ class _DetailsContentState extends State<DetailsContent> {
         seconds = entry[0] as int;
       }
     }
-    if (seconds == null &&
-        anime.episodes.isNotEmpty &&
-        index >= 0 &&
-        index < anime.episodes.length) {
-      final episodeId = anime.episodes[index]['id'];
-      final entry = animeModel.episodes[episodeId.toString()];
-      if (entry is List && entry.isNotEmpty && entry[0] is int) {
-        seconds = entry[0] as int;
+    if (seconds == null && anime.episodes.isNotEmpty) {
+      final localIndex = index - (_rangeStart - 1);
+      if (localIndex >= 0 && localIndex < anime.episodes.length) {
+        final episodeId = anime.episodes[localIndex]['id'];
+        final entry = animeModel.episodes[episodeId.toString()];
+        if (entry is List && entry.isNotEmpty && entry[0] is int) {
+          seconds = entry[0] as int;
+        }
       }
     }
     final time = seconds != null ? _formatSeconds(seconds) : null;
     if (time == null) {
       return 'Riprendi Ep. $episodeNumber';
     }
-    return 'Riprendi Ep. $episodeNumber · $time';
+    return 'Riprendi Ep. $episodeNumber - $time';
   }
+
+  List<_EpisodeRange> _buildRanges() {
+    final total = _totalEpisodes > 0 ? _totalEpisodes : anime.episodesCount;
+    if (total <= 0) {
+      return const [];
+    }
+    final ranges = <_EpisodeRange>[];
+    for (var start = 1; start <= total; start += _rangeSize) {
+      final end = (start + _rangeSize - 1) <= total ? (start + _rangeSize - 1) : total;
+      ranges.add(_EpisodeRange(start, end));
+    }
+    return ranges;
+  }
+
+  bool _isGlobalIndexInRange(int globalIndex) {
+    final episodeNumber = globalIndex + 1;
+    return episodeNumber >= _rangeStart && episodeNumber <= _rangeEnd;
+  }
+
+  int _globalToLocalIndex(int globalIndex) {
+    return globalIndex - (_rangeStart - 1);
+  }
+
+  Future<void> _selectRange(_EpisodeRange range) async {
+    setState(() {
+      episodesLoading = true;
+      episodesError = false;
+      _rangeStart = range.start;
+      _rangeEnd = range.end;
+    });
+
+    try {
+      final response = await fetchAnimeEpisodesRange(
+        animeId: anime.id,
+        startRange: range.start,
+        endRange: range.end,
+        totalCountHint: _totalEpisodes > 0 ? _totalEpisodes : anime.episodesCount,
+      );
+      final episodes = response['episodes'] as List? ?? [];
+      final totalCount = response['totalCount'] as int? ?? 0;
+
+      setState(() {
+        anime.episodes = episodes;
+        episodesLoading = false;
+        episodesError = false;
+        if (totalCount > 0) {
+          _totalEpisodes = totalCount;
+          anime.episodesCount = totalCount;
+        }
+      });
+      resumeController.index.value = getLatestIndex();
+      controller.updateProgress();
+
+      if (_pendingResumeIndex != null && _isGlobalIndexInRange(_pendingResumeIndex!)) {
+        final pending = _pendingResumeIndex!;
+        _pendingResumeIndex = null;
+        await _playEpisodeAtGlobalIndex(pending);
+      }
+    } catch (e) {
+      setState(() {
+        episodesLoading = false;
+        episodesError = true;
+      });
+    }
+  }
+
+  Future<void> _selectRangeForIndex(int globalIndex, {bool autoPlay = false}) async {
+    final start = (globalIndex ~/ _rangeSize) * _rangeSize + 1;
+    final end = start + _rangeSize - 1;
+    if (autoPlay) {
+      _pendingResumeIndex = globalIndex;
+    }
+    await _selectRange(_EpisodeRange(start, end));
+  }
+
+  void _trackProgressGlobal(int globalIndex) {
+    animeModel.lastSeenDate = DateTime.now();
+    animeModel.lastSeenEpisodeIndex = globalIndex;
+    Get.find<ObjectBox>().store.box<AnimeModel>().put(animeModel);
+    resumeController.updateIndex();
+  }
+
+  Future<void> _playEpisodeAtGlobalIndex(int globalIndex) async {
+    if (!_isGlobalIndexInRange(globalIndex)) {
+      return;
+    }
+    final localIndex = _globalToLocalIndex(globalIndex);
+    if (localIndex < 0 || localIndex >= anime.episodes.length) {
+      return;
+    }
+
+    controller.setLoading(true);
+    controller.setError(false);
+    _trackProgressGlobal(globalIndex);
+
+    try {
+      final episodeId = anime.episodes[localIndex]['id'];
+      final link = await fetchEpisodeStreamUrl(episodeId);
+      await Get.to(
+        () => PlayerPage(
+          url: link,
+          colorScheme: Theme.of(Get.context!).colorScheme,
+          animeId: anime.id,
+          episodeId: episodeId,
+          anime: anime,
+        ),
+      );
+      controller.updateProgress();
+      resumeController.updateIndex();
+    } catch (e) {
+      controller.setError(true);
+    } finally {
+      controller.setLoading(false);
+    }
+  }
+
   @override
   void initState() {
     anime = widget.anime;
@@ -151,14 +260,9 @@ class _DetailsContentState extends State<DetailsContent> {
         }
       }
 
-      final episodes = await fetchAnimeEpisodes(anime.id);
-      anime.episodes = episodes;
-      setState(() {
-        episodesLoading = false;
-        episodesError = false;
-      });
-      resumeController.index.value = getLatestIndex();
-      controller.updateProgress();
+      _totalEpisodes = anime.episodesCount;
+      final globalIndex = getLatestIndex();
+      await _selectRangeForIndex(globalIndex);
     } catch (e) {
       setState(() {
         episodesLoading = false;
@@ -169,6 +273,7 @@ class _DetailsContentState extends State<DetailsContent> {
 
   @override
   Widget build(BuildContext context) {
+    final ranges = _buildRanges();
     return CustomScrollView(
       controller: _controller,
       physics: const BouncingScrollPhysics(),
@@ -238,13 +343,16 @@ class _DetailsContentState extends State<DetailsContent> {
                           ),
                         )
                       : Obx(
-                          () => EpisodePlayer(
-                            anime: anime,
-                            controller: controller,
-                            resumeController: resumeController,
-                            resume: true,
-                            borderRadius: 90,
-                            height: 40,
+                          () => InkWell(
+                            borderRadius: BorderRadius.circular(90),
+                            onTap: () async {
+                              final globalIndex = getLatestIndex();
+                              if (_isGlobalIndexInRange(globalIndex)) {
+                                await _playEpisodeAtGlobalIndex(globalIndex);
+                                return;
+                              }
+                              await _selectRangeForIndex(globalIndex, autoPlay: true);
+                            },
                             child: Container(
                               height: 40,
                               width: double.infinity,
@@ -297,6 +405,35 @@ class _DetailsContentState extends State<DetailsContent> {
             ),
           ),
         ),
+        if (ranges.length > 1)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child: SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: ranges.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final range = ranges[index];
+                    final selected = range.start == _rangeStart;
+                    return ChoiceChip(
+                      label: Text(range.label),
+                      selected: selected,
+                      onSelected: episodesLoading
+                          ? null
+                          : (value) async {
+                              if (value && !selected) {
+                                await _selectRange(range);
+                              }
+                            },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(10),
@@ -318,7 +455,9 @@ class _DetailsContentState extends State<DetailsContent> {
               child: Text(
                 episodesLoading
                     ? "Caricamento episodi..."
-                    : "${anime.episodes.length} episodi disponibili",
+                    : _totalEpisodes > 0
+                        ? "Episodi $_rangeStart-$_rangeEnd di $_totalEpisodes"
+                        : "${anime.episodes.length} episodi disponibili",
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onBackground,
@@ -368,6 +507,7 @@ class _DetailsContentState extends State<DetailsContent> {
                 return EpisodeTile(
                   anime: anime,
                   index: episodeIndex,
+                  rangeStart: _rangeStart,
                   resumeController: resumeController,
                 );
               },

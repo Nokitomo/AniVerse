@@ -458,6 +458,61 @@ Future<List> fetchAnimeEpisodes(int animeId) async {
   return episodes;
 }
 
+Future<Map<String, dynamic>> fetchAnimeEpisodesRange({
+  required int animeId,
+  required int startRange,
+  required int endRange,
+  int? totalCountHint,
+}) async {
+  final headers = {
+    ..._defaultHeaders,
+    "Referer": "$_baseHost/",
+  };
+
+  int totalCount = totalCountHint ?? 0;
+  if (totalCount <= 0) {
+    final infoResponse = await http.get(
+      Uri.parse("$_baseHost/info_api/$animeId/"),
+      headers: headers,
+    );
+    if (infoResponse.statusCode < 200 || infoResponse.statusCode >= 300) {
+      throw Exception("HTTP ${infoResponse.statusCode} for info_api");
+    }
+    final info = jsonDecode(infoResponse.body);
+    totalCount = info is Map ? (info["episodes_count"] ?? 0) : 0;
+  }
+
+  if (totalCount <= 0) {
+    return {
+      'episodes': <dynamic>[],
+      'totalCount': 0,
+    };
+  }
+
+  final safeStart = startRange.clamp(1, totalCount);
+  final safeEnd = endRange.clamp(safeStart, totalCount);
+
+  final url = Uri.parse("$_baseHost/info_api/$animeId/1").replace(
+    queryParameters: {
+      "start_range": safeStart.toString(),
+      "end_range": safeEnd.toString(),
+    },
+  );
+
+  final response = await http.get(url, headers: headers);
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw Exception("HTTP ${response.statusCode} for info_api range");
+  }
+  final data = jsonDecode(response.body);
+  final List episodes =
+      data is Map && data["episodes"] is List ? data["episodes"] : [];
+
+  return {
+    'episodes': episodes,
+    'totalCount': totalCount,
+  };
+}
+
 String? _extractDownloadUrl(String html) {
   final match = RegExp(r"window\.downloadUrl\s*=\s*'([^']+)'").firstMatch(html);
   if (match != null) {

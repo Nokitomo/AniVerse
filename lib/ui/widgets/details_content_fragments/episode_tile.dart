@@ -14,10 +14,17 @@ import 'package:aniverse/objectbox.g.dart';
 class EpisodeTile extends StatefulWidget {
   final AnimeClass anime;
   final int index;
+  final int rangeStart;
 
   final ResumeController resumeController;
 
-  const EpisodeTile({super.key, required this.anime, required this.index, required this.resumeController});
+  const EpisodeTile({
+    super.key,
+    required this.anime,
+    required this.index,
+    required this.rangeStart,
+    required this.resumeController,
+  });
 
   @override
   State<EpisodeTile> createState() => _EpisodeTileState();
@@ -56,6 +63,7 @@ class _EpisodeTileState extends State<EpisodeTile> {
           resumeController: widget.resumeController,
           anime: anime,
           index: index,
+          rangeStart: widget.rangeStart,
           controller: loading,
           borderRadius: 7,
           child: Container(
@@ -209,6 +217,9 @@ class LoadingThings extends GetxController {
   }
 
   double getProgress() {
+    if (anime.episodes.isEmpty || index < 0 || index >= anime.episodes.length) {
+      return 0;
+    }
     if (animeModel.episodes.containsKey(anime.episodes[index]['id'].toString())) {
       var currTime = animeModel.episodes[anime.episodes[index]['id'].toString()][0];
       var totTime = animeModel.episodes[anime.episodes[index]['id'].toString()][1];

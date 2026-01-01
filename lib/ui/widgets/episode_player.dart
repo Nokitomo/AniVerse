@@ -23,6 +23,7 @@ class EpisodePlayer extends StatefulWidget {
   final double height;
 
   final bool resume;
+  final int rangeStart;
 
   const EpisodePlayer({
     super.key,
@@ -34,6 +35,7 @@ class EpisodePlayer extends StatefulWidget {
     this.borderRadius,
     this.height = 63,
     this.resume = false,
+    this.rangeStart = 1,
   });
 
   @override
@@ -78,7 +80,8 @@ class _EpisodePlayerState extends State<EpisodePlayer> {
   void trackProgress() {
     var animeModel = fetchAnimeModel(anime);
     animeModel.lastSeenDate = DateTime.now();
-    animeModel.lastSeenEpisodeIndex = index;
+    final globalIndex = (widget.rangeStart - 1) + index;
+    animeModel.lastSeenEpisodeIndex = globalIndex;
 
     Get.find<ObjectBox>().store.box<AnimeModel>().put(animeModel);
     widget.resumeController.updateIndex();
@@ -91,7 +94,9 @@ class _EpisodePlayerState extends State<EpisodePlayer> {
     }
 
     if (widget.resume) {
-      index = widget.resumeController.index.value % (anime.episodes.length);
+      final globalIndex = widget.resumeController.index.value;
+      final localIndex = globalIndex - (widget.rangeStart - 1);
+      index = localIndex.clamp(0, anime.episodes.length - 1);
     }
 
     trackProgress();
