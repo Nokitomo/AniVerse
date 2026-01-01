@@ -279,6 +279,8 @@ class _DetailsContentState extends State<DetailsContent> {
             ? "Episodi $_rangeStart-$_rangeEnd di $_totalEpisodes"
             : "${anime.episodes.length} episodi disponibili";
     final resumeLabel = _resumeLabel();
+    final showRanges = ranges.length > 1;
+    final showReadMore = anime.description.trim().length > 120;
     return CustomScrollView(
       controller: _controller,
       physics: const BouncingScrollPhysics(),
@@ -305,6 +307,8 @@ class _DetailsContentState extends State<DetailsContent> {
             episodesLabel: episodesLabel,
             resumeLabel: resumeLabel,
             controller: controller,
+            showRanges: showRanges,
+            showReadMore: showReadMore,
             onResumeTap: () async {
               final globalIndex = getLatestIndex();
               if (_isGlobalIndexInRange(globalIndex)) {
@@ -316,6 +320,33 @@ class _DetailsContentState extends State<DetailsContent> {
             onSelectRange: (range) async {
               await _selectRange(range);
             },
+            onReadMore: showReadMore
+                ? () {
+                    showModalBottomSheet(
+                      context: context,
+                      showDragHandle: true,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                            child: SingleChildScrollView(
+                              child: Text(
+                                anime.description,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                : null,
             onScrollTop: () {
               _controller.animateTo(
                 _controller.position.minScrollExtent,
@@ -535,8 +566,11 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String episodesLabel;
   final String resumeLabel;
   final LoadingThings controller;
+  final bool showRanges;
+  final bool showReadMore;
   final Future<void> Function() onResumeTap;
   final Future<void> Function(_EpisodeRange range) onSelectRange;
+  final VoidCallback? onReadMore;
   final VoidCallback onScrollTop;
   final VoidCallback onScrollBottom;
 
@@ -551,17 +585,20 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.episodesLabel,
     required this.resumeLabel,
     required this.controller,
+    required this.showRanges,
+    required this.showReadMore,
     required this.onResumeTap,
     required this.onSelectRange,
+    required this.onReadMore,
     required this.onScrollTop,
     required this.onScrollBottom,
   });
 
   @override
-  double get minExtent => 120;
+  double get minExtent => showRanges ? 140 : 120;
 
   @override
-  double get maxExtent => 210;
+  double get maxExtent => showRanges ? 240 : 200;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -573,7 +610,6 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
     final chipsHeight = lerpDouble(38, 30, t) ?? 30;
     final spacing = lerpDouble(10, 6, t) ?? 6;
     final maxLines = t > 0.6 ? 1 : 3;
-    final showRanges = ranges.length > 1;
 
     return Container(
       color: Theme.of(context).colorScheme.background,
@@ -581,14 +617,31 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            anime.description,
-            maxLines: maxLines,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onBackground,
-              fontSize: descriptionSize,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  anime.description,
+                  maxLines: maxLines,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onBackground,
+                    fontSize: descriptionSize,
+                  ),
+                ),
+              ),
+              if (showReadMore && onReadMore != null)
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(0, 28),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: onReadMore,
+                  child: const Text("Leggi tutto"),
+                ),
+            ],
           ),
           SizedBox(height: spacing),
           if (episodesLoading)
@@ -723,7 +776,9 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.totalEpisodes != totalEpisodes ||
         oldDelegate.episodesLabel != episodesLabel ||
         oldDelegate.resumeLabel != resumeLabel ||
-        oldDelegate.ranges.length != ranges.length;
+        oldDelegate.ranges.length != ranges.length ||
+        oldDelegate.showRanges != showRanges ||
+        oldDelegate.showReadMore != showReadMore;
   }
 }
 
