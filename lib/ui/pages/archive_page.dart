@@ -641,9 +641,9 @@ class _ArchivePageState extends State<ArchivePage> {
       return Expanded(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final rawCount = (constraints.maxWidth / 180).floor();
+            final rawCount = (constraints.maxWidth / 170).floor();
             final crossAxisCount =
-                rawCount < 2 ? 2 : (rawCount > 5 ? 5 : rawCount);
+                rawCount < 2 ? 2 : (rawCount > 6 ? 6 : rawCount);
             return GridView.builder(
               controller: _scrollController,
               padding: EdgeInsets.zero,
