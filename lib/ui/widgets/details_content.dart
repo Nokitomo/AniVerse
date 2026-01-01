@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:aniverse/helper/api.dart';
@@ -433,20 +434,23 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => _snap(170);
+  double get minExtent => _snapWithEpsilon(170);
 
   @override
   double get maxExtent {
-    final min = _snap(170);
-    final max = _snap(260);
+    final min = _snapWithEpsilon(170);
+    final max = _snapWithEpsilon(260);
     return max < min ? min : max;
   }
 
-  double _snap(double value) {
+  double _snapWithEpsilon(double value) {
     if (devicePixelRatio <= 0) {
       return value;
     }
-    return (value * devicePixelRatio).floorToDouble() / devicePixelRatio;
+    final snapped =
+        (value * devicePixelRatio).floorToDouble() / devicePixelRatio;
+    final epsilon = 0.5 / devicePixelRatio;
+    return math.max(0.0, snapped - epsilon);
   }
 
   @override
@@ -613,20 +617,23 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => _snap(showRanges ? 140 : 120);
+  double get minExtent => _snapWithEpsilon(showRanges ? 140 : 120);
 
   @override
   double get maxExtent {
-    final min = _snap(showRanges ? 140 : 120);
-    final max = _snap(showRanges ? 240 : 200);
+    final min = _snapWithEpsilon(showRanges ? 140 : 120);
+    final max = _snapWithEpsilon(showRanges ? 240 : 200);
     return max < min ? min : max;
   }
 
-  double _snap(double value) {
+  double _snapWithEpsilon(double value) {
     if (devicePixelRatio <= 0) {
       return value;
     }
-    return (value * devicePixelRatio).floorToDouble() / devicePixelRatio;
+    final snapped =
+        (value * devicePixelRatio).floorToDouble() / devicePixelRatio;
+    final epsilon = 0.5 / devicePixelRatio;
+    return math.max(0.0, snapped - epsilon);
   }
 
   @override
