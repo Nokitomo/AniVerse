@@ -82,61 +82,64 @@ class LoadingPageForAnimeState extends State<LoadingPageForAnime> {
                   ),
                 ),
                 Center(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 800,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Hero(
-                              key: UniqueKey(),
-                              tag: widget.heroTag,
-                              child: CachedNetworkImage(
-                                imageUrl: widget.animeObj.imageUrl,
-                                height: 280,
-                                errorWidget: (context, url, error) => const Icon(
-                                  Icons.warning_amber_rounded,
-                                  size: 35,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final imageHeight = (constraints.maxHeight * 0.35)
+                          .clamp(180.0, 280.0)
+                          .toDouble();
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Hero(
+                            key: UniqueKey(),
+                            tag: widget.heroTag,
+                            child: CachedNetworkImage(
+                              imageUrl: widget.animeObj.imageUrl,
+                              height: imageHeight,
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.warning_amber_rounded,
+                                size: 35,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 30,
+                              right: 30,
+                              top: 10,
+                            ),
+                            child: Text(
+                              widget.animeObj.title,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onBackground,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          DefaultTextStyle(
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            child: AnimatedTextKit(
+                              repeatForever: true,
+                              animatedTexts: [
+                                TypewriterAnimatedText(
+                                  'Caricamento...',
+                                  speed: const Duration(milliseconds: 100),
                                 ),
-                              ),
+                              ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 30,
-                                right: 30,
-                                top: 10,
-                              ),
-                              child: Text(
-                                widget.animeObj.title,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onBackground,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      DefaultTextStyle(
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        child: AnimatedTextKit(
-                          repeatForever: true,
-                          animatedTexts: [
-                            TypewriterAnimatedText(
-                              'Caricamento...',
-                              speed: const Duration(milliseconds: 100),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
