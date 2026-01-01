@@ -5,7 +5,6 @@ import 'package:aniverse/helper/models/anime_model.dart';
 import 'package:aniverse/ui/widgets/details_content_fragments/episode_tile.dart';
 import 'package:aniverse/ui/widgets/player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:expandable_widgets/expandable_widgets.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aniverse/helper/classes/anime_obj.dart';
@@ -274,6 +273,12 @@ class _DetailsContentState extends State<DetailsContent> {
   @override
   Widget build(BuildContext context) {
     final ranges = _buildRanges();
+    final episodesLabel = episodesLoading
+        ? "Caricamento episodi..."
+        : _totalEpisodes > 0
+            ? "Episodi $_rangeStart-$_rangeEnd di $_totalEpisodes"
+            : "${anime.episodes.length} episodi disponibili";
+    final resumeLabel = _resumeLabel();
     return CustomScrollView(
       controller: _controller,
       physics: const BouncingScrollPhysics(),
@@ -287,185 +292,44 @@ class _DetailsContentState extends State<DetailsContent> {
             episodesError: episodesError,
           ),
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: ExpandableText(
-              backgroundColor: Theme.of(context).colorScheme.background,
-              boxShadow: const [],
-              textWidget: Text(
-                anime.description.length > 50 ? anime.description : anime.description + " " * 50,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onBackground,
-                  fontSize: 15,
-                ),
-              ).copyWith(maxLines: 3),
-              arrowWidget: Icon(
-                Icons.keyboard_arrow_down,
-                color: Theme.of(context).colorScheme.onBackground,
-              ),
-              arrowLocation: ArrowLocation.bottom,
-              finalArrowLocation: ArrowLocation.bottom,
-              animationDuration: const Duration(milliseconds: 300),
-            ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: SizedBox(
-              width: double.infinity,
-              child: episodesLoading
-                  ? const SizedBox(
-                      height: 40,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                        ),
-                      ),
-                    )
-                  : episodesError
-                      ? Container(
-                          height: 40,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(90),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "Errore nel caricamento degli episodi",
-                              style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onErrorContainer,
-                              ),
-                            ),
-                          ),
-                        )
-                      : Obx(
-                          () => InkWell(
-                            borderRadius: BorderRadius.circular(90),
-                            onTap: () async {
-                              final globalIndex = getLatestIndex();
-                              if (_isGlobalIndexInRange(globalIndex)) {
-                                await _playEpisodeAtGlobalIndex(globalIndex);
-                                return;
-                              }
-                              await _selectRangeForIndex(globalIndex, autoPlay: true);
-                            },
-                            child: Container(
-                              height: 40,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                borderRadius: BorderRadius.circular(90),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  controller.error.value
-                                      ? Icon(
-                                          Icons.error,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSecondaryContainer,
-                                        )
-                                      : controller.loading.value
-                                          ? const SizedBox(
-                                              height: 18,
-                                              width: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.5,
-                                              ),
-                                            )
-                                          : Icon(
-                                              Icons.play_arrow,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSecondaryContainer,
-                                            ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    _resumeLabel(),
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSecondaryContainer,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-            ),
-          ),
-        ),
-        if (ranges.length > 1)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: ranges.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final range = ranges[index];
-                    final selected = range.start == _rangeStart;
-                    return ChoiceChip(
-                      label: Text(range.label),
-                      selected: selected,
-                      onSelected: episodesLoading
-                          ? null
-                          : (value) async {
-                              if (value && !selected) {
-                                await _selectRange(range);
-                              }
-                            },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: InkWell(
-              onDoubleTap: () {
-                _controller.animateTo(
-                  _controller.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-              onTap: () {
-                _controller.animateTo(
-                  _controller.position.minScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-              child: Text(
-                episodesLoading
-                    ? "Caricamento episodi..."
-                    : _totalEpisodes > 0
-                        ? "Episodi $_rangeStart-$_rangeEnd di $_totalEpisodes"
-                        : "${anime.episodes.length} episodi disponibili",
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onBackground,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _DetailsControlsHeaderDelegate(
+            anime: anime,
+            episodesLoading: episodesLoading,
+            episodesError: episodesError,
+            ranges: ranges,
+            rangeStart: _rangeStart,
+            rangeEnd: _rangeEnd,
+            totalEpisodes: _totalEpisodes,
+            episodesLabel: episodesLabel,
+            resumeLabel: resumeLabel,
+            controller: controller,
+            onResumeTap: () async {
+              final globalIndex = getLatestIndex();
+              if (_isGlobalIndexInRange(globalIndex)) {
+                await _playEpisodeAtGlobalIndex(globalIndex);
+                return;
+              }
+              await _selectRangeForIndex(globalIndex, autoPlay: true);
+            },
+            onSelectRange: (range) async {
+              await _selectRange(range);
+            },
+            onScrollTop: () {
+              _controller.animateTo(
+                _controller.position.minScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
+            onScrollBottom: () {
+              _controller.animateTo(
+                _controller.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
           ),
         ),
         if (episodesLoading)
@@ -657,6 +521,209 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
     return oldDelegate.anime != anime ||
         oldDelegate.episodesLoading != episodesLoading ||
         oldDelegate.episodesError != episodesError;
+  }
+}
+
+class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final AnimeClass anime;
+  final bool episodesLoading;
+  final bool episodesError;
+  final List<_EpisodeRange> ranges;
+  final int rangeStart;
+  final int rangeEnd;
+  final int totalEpisodes;
+  final String episodesLabel;
+  final String resumeLabel;
+  final LoadingThings controller;
+  final Future<void> Function() onResumeTap;
+  final Future<void> Function(_EpisodeRange range) onSelectRange;
+  final VoidCallback onScrollTop;
+  final VoidCallback onScrollBottom;
+
+  _DetailsControlsHeaderDelegate({
+    required this.anime,
+    required this.episodesLoading,
+    required this.episodesError,
+    required this.ranges,
+    required this.rangeStart,
+    required this.rangeEnd,
+    required this.totalEpisodes,
+    required this.episodesLabel,
+    required this.resumeLabel,
+    required this.controller,
+    required this.onResumeTap,
+    required this.onSelectRange,
+    required this.onScrollTop,
+    required this.onScrollBottom,
+  });
+
+  @override
+  double get minExtent => 120;
+
+  @override
+  double get maxExtent => 210;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final range = maxExtent - minExtent;
+    final t = range == 0 ? 1.0 : (shrinkOffset / range).clamp(0.0, 1.0);
+    final descriptionSize = lerpDouble(15, 12, t) ?? 12;
+    final labelSize = lerpDouble(15, 12, t) ?? 12;
+    final resumeHeight = lerpDouble(40, 32, t) ?? 32;
+    final chipsHeight = lerpDouble(38, 30, t) ?? 30;
+    final spacing = lerpDouble(10, 6, t) ?? 6;
+    final maxLines = t > 0.6 ? 1 : 3;
+    final showRanges = ranges.length > 1;
+
+    return Container(
+      color: Theme.of(context).colorScheme.background,
+      padding: EdgeInsets.fromLTRB(10, spacing, 10, spacing),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            anime.description,
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onBackground,
+              fontSize: descriptionSize,
+            ),
+          ),
+          SizedBox(height: spacing),
+          if (episodesLoading)
+            SizedBox(
+              height: resumeHeight,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                ),
+              ),
+            )
+          else if (episodesError)
+            Container(
+              height: resumeHeight,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(90),
+              ),
+              child: Center(
+                child: Text(
+                  "Errore nel caricamento degli episodi",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            )
+          else
+            Obx(
+              () => InkWell(
+                borderRadius: BorderRadius.circular(90),
+                onTap: () {
+                  onResumeTap();
+                },
+                child: Container(
+                  height: resumeHeight,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(90),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      controller.error.value
+                          ? Icon(
+                              Icons.error,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
+                            )
+                          : controller.loading.value
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.play_arrow,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSecondaryContainer,
+                                ),
+                      const SizedBox(width: 10),
+                      Text(
+                        resumeLabel,
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSecondaryContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (showRanges) SizedBox(height: spacing),
+          if (showRanges)
+            SizedBox(
+              height: chipsHeight,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: ranges.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final range = ranges[index];
+                  final selected = range.start == rangeStart;
+                  return ChoiceChip(
+                    label: Text(range.label),
+                    selected: selected,
+                    onSelected: episodesLoading
+                        ? null
+                        : (value) {
+                            if (value && !selected) {
+                              onSelectRange(range);
+                            }
+                          },
+                  );
+                },
+              ),
+            ),
+          SizedBox(height: spacing),
+          InkWell(
+            onTap: onScrollTop,
+            onDoubleTap: onScrollBottom,
+            child: Text(
+              episodesLabel,
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onBackground,
+                fontSize: labelSize,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _DetailsControlsHeaderDelegate oldDelegate) {
+    return oldDelegate.anime != anime ||
+        oldDelegate.episodesLoading != episodesLoading ||
+        oldDelegate.episodesError != episodesError ||
+        oldDelegate.rangeStart != rangeStart ||
+        oldDelegate.rangeEnd != rangeEnd ||
+        oldDelegate.totalEpisodes != totalEpisodes ||
+        oldDelegate.episodesLabel != episodesLabel ||
+        oldDelegate.resumeLabel != resumeLabel ||
+        oldDelegate.ranges.length != ranges.length;
   }
 }
 
