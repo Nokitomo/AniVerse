@@ -306,10 +306,10 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => 150;
+  double get minExtent => 200;
 
   @override
-  double get maxExtent => 320;
+  double get maxExtent => 340;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -320,7 +320,8 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
     final statusSize = lerpDouble(15, 12, t) ?? 12;
     final topPad = lerpDouble(15, 6, t) ?? 6;
     final sidePad = lerpDouble(10, 6, t) ?? 6;
-    final genresOpacity = (1 - t).clamp(0.0, 1.0);
+    final showGenres = t < 0.55;
+    final rowBottomSpacing = lerpDouble(8, 4, t) ?? 4;
     final background = Theme.of(context).colorScheme.background;
 
     return Container(
@@ -357,7 +358,7 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
                         children: [
                           Text(
                             anime.title,
-                            maxLines: 2,
+                            maxLines: t > 0.55 ? 1 : 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.onBackground,
@@ -366,9 +367,8 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Opacity(
-                            opacity: genresOpacity,
-                            child: Wrap(
+                          if (showGenres)
+                            Wrap(
                               runSpacing: 4,
                               spacing: 4,
                               children: [
@@ -403,8 +403,7 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   )
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: showGenres ? 6 : 2),
                           Text(
                             "${anime.status} - ${anime.episodesCount != 0 ? anime.episodesCount : "??"} episodi",
                             style: TextStyle(
@@ -418,7 +417,7 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: rowBottomSpacing),
               SizedBox(
                 width: double.infinity,
                 child: episodesLoading

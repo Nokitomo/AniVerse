@@ -144,20 +144,30 @@ class _CalendarPageState extends State<CalendarPage> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 0.7,
-                                mainAxisSpacing: 8,
-                                crossAxisSpacing: 8,
-                              ),
-                              itemCount: group.value.length,
-                              itemBuilder: (context, itemIndex) {
-                                return AnimeCard(
-                                  anime: group.value[itemIndex].anime,
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final rawCount =
+                                    (constraints.maxWidth / 180).floor();
+                                final crossAxisCount = rawCount < 2
+                                    ? 2
+                                    : (rawCount > 4 ? 4 : rawCount);
+                                return GridView.builder(
+                                  shrinkWrap: true,
+                                  physics:
+                                      const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount,
+                                    childAspectRatio: 0.7,
+                                    mainAxisSpacing: 8,
+                                    crossAxisSpacing: 8,
+                                  ),
+                                  itemCount: group.value.length,
+                                  itemBuilder: (context, itemIndex) {
+                                    return AnimeCard(
+                                      anime: group.value[itemIndex].anime,
+                                    );
+                                  },
                                 );
                               },
                             ),

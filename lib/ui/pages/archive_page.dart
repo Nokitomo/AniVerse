@@ -639,22 +639,29 @@ class _ArchivePageState extends State<ArchivePage> {
 
     if (_gridView) {
       return Expanded(
-        child: GridView.builder(
-          controller: _scrollController,
-          padding: EdgeInsets.zero,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.68,
-          ),
-          itemCount: _items.length + (_loadingMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= _items.length) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return AnimeCard(
-              anime: _items[index],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final rawCount = (constraints.maxWidth / 180).floor();
+            final crossAxisCount =
+                rawCount < 2 ? 2 : (rawCount > 5 ? 5 : rawCount);
+            return GridView.builder(
+              controller: _scrollController,
+              padding: EdgeInsets.zero,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 0.68,
+              ),
+              itemCount: _items.length + (_loadingMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= _items.length) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return AnimeCard(
+                  anime: _items[index],
+                );
+              },
             );
           },
         ),
