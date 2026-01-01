@@ -428,10 +428,10 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => 170;
+  double get minExtent => 169.9;
 
   @override
-  double get maxExtent => 260;
+  double get maxExtent => 259.9;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
