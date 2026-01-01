@@ -188,24 +188,33 @@ class _ExploreSectionPageState extends State<ExploreSectionPage> {
                       ],
                     ),
                   )
-                : GridView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(10),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.7,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
-                    ),
-                    itemCount: _items.length + (_loadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index >= _items.length) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                      return AnimeCard(anime: _items[index]);
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final rawCount =
+                          (constraints.maxWidth / 170).floor();
+                      final crossAxisCount = rawCount < 2
+                          ? 2
+                          : (rawCount > 6 ? 6 : rawCount);
+                      return GridView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(10),
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: 0.7,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                        ),
+                        itemCount: _items.length + (_loadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= _items.length) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return AnimeCard(anime: _items[index]);
+                        },
+                      );
                     },
                   ),
       ),

@@ -147,10 +147,10 @@ class _CalendarPageState extends State<CalendarPage> {
                             LayoutBuilder(
                               builder: (context, constraints) {
                                 final rawCount =
-                                    (constraints.maxWidth / 180).floor();
+                                    (constraints.maxWidth / 170).floor();
                                 final crossAxisCount = rawCount < 2
                                     ? 2
-                                    : (rawCount > 4 ? 4 : rawCount);
+                                    : (rawCount > 6 ? 6 : rawCount);
                                 return GridView.builder(
                                   shrinkWrap: true,
                                   physics:
