@@ -281,6 +281,7 @@ class _DetailsContentState extends State<DetailsContent> {
     final resumeLabel = _resumeLabel();
     final showRanges = ranges.length > 1;
     final showReadMore = anime.description.trim().length > 120;
+    final dpr = MediaQuery.of(context).devicePixelRatio;
     return CustomScrollView(
       controller: _controller,
       physics: const BouncingScrollPhysics(),
@@ -292,6 +293,7 @@ class _DetailsContentState extends State<DetailsContent> {
             heroTag: widget.heroTag,
             episodesLoading: episodesLoading,
             episodesError: episodesError,
+            devicePixelRatio: dpr,
           ),
         ),
         SliverPersistentHeader(
@@ -309,6 +311,7 @@ class _DetailsContentState extends State<DetailsContent> {
             controller: controller,
             showRanges: showRanges,
             showReadMore: showReadMore,
+            devicePixelRatio: dpr,
             onResumeTap: () async {
               final globalIndex = getLatestIndex();
               if (_isGlobalIndexInRange(globalIndex)) {
@@ -419,19 +422,32 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Key heroTag;
   final bool episodesLoading;
   final bool episodesError;
+  final double devicePixelRatio;
 
   _DetailsHeaderDelegate({
     required this.anime,
     required this.heroTag,
     required this.episodesLoading,
     required this.episodesError,
+    required this.devicePixelRatio,
   });
 
   @override
-  double get minExtent => 169.9;
+  double get minExtent => _snap(170);
 
   @override
-  double get maxExtent => 259.9;
+  double get maxExtent {
+    final min = _snap(170);
+    final max = _snap(260);
+    return max < min ? min : max;
+  }
+
+  double _snap(double value) {
+    if (devicePixelRatio <= 0) {
+      return value;
+    }
+    return (value * devicePixelRatio).floorToDouble() / devicePixelRatio;
+  }
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -568,6 +584,7 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
   final LoadingThings controller;
   final bool showRanges;
   final bool showReadMore;
+  final double devicePixelRatio;
   final Future<void> Function() onResumeTap;
   final Future<void> Function(_EpisodeRange range) onSelectRange;
   final VoidCallback? onReadMore;
@@ -587,6 +604,7 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.controller,
     required this.showRanges,
     required this.showReadMore,
+    required this.devicePixelRatio,
     required this.onResumeTap,
     required this.onSelectRange,
     required this.onReadMore,
@@ -595,10 +613,21 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => showRanges ? 140 : 120;
+  double get minExtent => _snap(showRanges ? 140 : 120);
 
   @override
-  double get maxExtent => showRanges ? 240 : 200;
+  double get maxExtent {
+    final min = _snap(showRanges ? 140 : 120);
+    final max = _snap(showRanges ? 240 : 200);
+    return max < min ? min : max;
+  }
+
+  double _snap(double value) {
+    if (devicePixelRatio <= 0) {
+      return value;
+    }
+    return (value * devicePixelRatio).floorToDouble() / devicePixelRatio;
+  }
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
