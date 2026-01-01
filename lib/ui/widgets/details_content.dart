@@ -611,7 +611,8 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
     final spacing = lerpDouble(10, 6, t) ?? 6;
     final maxLines = t > 0.6 ? 1 : 3;
 
-    return Container(
+    return ClipRect(
+      child: Container(
       color: Theme.of(context).colorScheme.background,
       padding: EdgeInsets.fromLTRB(10, spacing, 10, spacing),
       child: Column(
@@ -762,6 +763,7 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
         ],
+      ),
       ),
     );
   }
