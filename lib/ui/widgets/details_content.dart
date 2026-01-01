@@ -606,9 +606,9 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
     final t = range == 0 ? 1.0 : (shrinkOffset / range).clamp(0.0, 1.0);
     final descriptionSize = lerpDouble(15, 12, t) ?? 12;
     final labelSize = lerpDouble(15, 12, t) ?? 12;
-    final resumeHeight = lerpDouble(40, 32, t) ?? 32;
-    final chipsHeight = lerpDouble(38, 30, t) ?? 30;
-    final spacing = lerpDouble(10, 6, t) ?? 6;
+    final resumeHeight = lerpDouble(38, 30, t) ?? 30;
+    final chipsHeight = lerpDouble(36, 28, t) ?? 28;
+    final spacing = lerpDouble(8, 4, t) ?? 4;
     final maxLines = t > 0.6 ? 1 : 3;
 
     return ClipRect(
