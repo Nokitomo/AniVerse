@@ -330,21 +330,25 @@ class _DetailsContentState extends State<DetailsContent> {
           ),
         ),
         if (episodesLoading)
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: CircularProgressIndicator(),
+          const SliverToBoxAdapter(
+            child: SizedBox(
+              height: 220,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
           )
         else if (episodesError)
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: Text(
-                "Impossibile caricare gli episodi",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onBackground,
-                  fontSize: 16,
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 220,
+              child: Center(
+                child: Text(
+                  "Impossibile caricare gli episodi",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onBackground,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
