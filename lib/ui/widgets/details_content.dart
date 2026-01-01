@@ -428,10 +428,10 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => 169.99;
+  double get minExtent => 170;
 
   @override
-  double get maxExtent => 259.99;
+  double get maxExtent => 260;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -595,10 +595,10 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => showRanges ? 139.99 : 119.99;
+  double get minExtent => showRanges ? 140 : 120;
 
   @override
-  double get maxExtent => showRanges ? 239.99 : 199.99;
+  double get maxExtent => showRanges ? 240 : 200;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -615,9 +615,7 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Container(
       color: Theme.of(context).colorScheme.background,
       padding: EdgeInsets.fromLTRB(10, spacing, 10, spacing),
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -765,7 +763,6 @@ class _DetailsControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
         ],
-      ),
       ),
       ),
     );
