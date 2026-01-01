@@ -178,11 +178,8 @@ class _DetailsContentState extends State<DetailsContent> {
           delegate: _DetailsHeaderDelegate(
             anime: anime,
             heroTag: widget.heroTag,
-            controller: controller,
-            resumeController: resumeController,
             episodesLoading: episodesLoading,
             episodesError: episodesError,
-            resumeLabel: _resumeLabel,
           ),
         ),
         SliverToBoxAdapter(
@@ -205,6 +202,98 @@ class _DetailsContentState extends State<DetailsContent> {
               arrowLocation: ArrowLocation.bottom,
               finalArrowLocation: ArrowLocation.bottom,
               animationDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: SizedBox(
+              width: double.infinity,
+              child: episodesLoading
+                  ? const SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    )
+                  : episodesError
+                      ? Container(
+                          height: 40,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(90),
+                          ),
+                          child: Center(
+                            child: Text(
+                              "Errore nel caricamento degli episodi",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onErrorContainer,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Obx(
+                          () => EpisodePlayer(
+                            anime: anime,
+                            controller: controller,
+                            resumeController: resumeController,
+                            resume: true,
+                            borderRadius: 90,
+                            height: 40,
+                            child: Container(
+                              height: 40,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer,
+                                borderRadius: BorderRadius.circular(90),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  controller.error.value
+                                      ? Icon(
+                                          Icons.error,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSecondaryContainer,
+                                        )
+                                      : controller.loading.value
+                                          ? const SizedBox(
+                                              height: 18,
+                                              width: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2.5,
+                                              ),
+                                            )
+                                          : Icon(
+                                              Icons.play_arrow,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSecondaryContainer,
+                                            ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    _resumeLabel(),
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSecondaryContainer,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
             ),
           ),
         ),
@@ -289,27 +378,21 @@ class _DetailsContentState extends State<DetailsContent> {
 class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
   final AnimeClass anime;
   final Key heroTag;
-  final LoadingThings controller;
-  final ResumeController resumeController;
   final bool episodesLoading;
   final bool episodesError;
-  final String Function() resumeLabel;
 
   _DetailsHeaderDelegate({
     required this.anime,
     required this.heroTag,
-    required this.controller,
-    required this.resumeController,
     required this.episodesLoading,
     required this.episodesError,
-    required this.resumeLabel,
   });
 
   @override
-  double get minExtent => 200;
+  double get minExtent => 170;
 
   @override
-  double get maxExtent => 340;
+  double get maxExtent => 260;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -418,90 +501,6 @@ class _DetailsHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ],
               ),
               SizedBox(height: rowBottomSpacing),
-              SizedBox(
-                width: double.infinity,
-                child: episodesLoading
-                    ? const SizedBox(
-                        height: 40,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                          ),
-                        ),
-                      )
-                    : episodesError
-                        ? Container(
-                            height: 40,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.errorContainer,
-                              borderRadius: BorderRadius.circular(90),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "Errore nel caricamento degli episodi",
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onErrorContainer,
-                                ),
-                              ),
-                            ),
-                          )
-                        : Obx(
-                            () => EpisodePlayer(
-                              anime: anime,
-                              controller: controller,
-                              resumeController: resumeController,
-                              resume: true,
-                              borderRadius: 90,
-                              height: 40,
-                              child: Container(
-                                height: 40,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.secondaryContainer,
-                                  borderRadius: BorderRadius.circular(90),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    controller.error.value
-                                        ? Icon(
-                                            Icons.error,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSecondaryContainer,
-                                          )
-                                        : controller.loading.value
-                                            ? const SizedBox(
-                                                height: 18,
-                                                width: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2.5,
-                                                ),
-                                              )
-                                            : Icon(
-                                                Icons.play_arrow,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onSecondaryContainer,
-                                              ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(
-                                      resumeLabel(),
-                                      style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSecondaryContainer,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-              ),
             ],
           ),
         ),
