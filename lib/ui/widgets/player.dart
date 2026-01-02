@@ -2,6 +2,7 @@ import 'package:aniverse/helper/classes/anime_obj.dart';
 import 'package:aniverse/helper/models/anime_model.dart';
 import 'package:aniverse/objectbox.g.dart';
 import 'package:aniverse/services/internal_db.dart';
+import 'package:aniverse/helper/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
