@@ -39,8 +39,11 @@ flutter:
         pluginClass: FilePickerWeb
         fileName: _internal/file_picker_web.dart
       macos:
-        default_package: file_picker
+        dartPluginClass: FilePickerMacOS
+        fileName: src/file_picker_macos.dart
       windows:
-        default_package: file_picker
+        dartPluginClass: FilePickerWindows
+        fileName: src/windows/file_picker_windows.dart
       linux:
-        default_package: file_picker
+        dartPluginClass: FilePickerLinux
+        fileName: src/linux/file_picker_linux.dart

@@ -13,6 +13,11 @@ Aumenta la heap Gradle in android/gradle.properties:
 Il pacchetto file_picker mostra warning per le piattaforme desktop.
 Sono rumorosi ma non fatali per build Android/iOS.
 
+## Desktop build: errori file_picker default_package
+Se la build desktop fallisce con errori su "default_package" in file_picker,
+assicurati che il plugin desktop sia registrato con `dartPluginClass`
+in `third_party/file_picker/pubspec.yaml`.
+
 ## PiP non funziona su iOS
 - Richiede iOS 14+.
 - PiP si attiva solo tramite pulsante (auto PiP in background e disabilitato nel codice).
