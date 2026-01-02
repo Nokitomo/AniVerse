@@ -291,7 +291,7 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     return Shortcuts(
       shortcuts: {
-        const LogicalKeySet(LogicalKeyboardKey.space): const _TogglePlayIntent(),
+        LogicalKeySet(LogicalKeyboardKey.space): const _TogglePlayIntent(),
       },
       child: Actions(
         actions: {
