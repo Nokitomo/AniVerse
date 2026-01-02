@@ -49,6 +49,7 @@ jobs:
           APPIMAGEBUILDER_ARCH: x86_64
           ARCH: x86_64
           APPIMAGE_ARCH: x86_64
+          APPIMAGEBUILDER_DISABLE_APPRUN2: "1"
         run: appimage-builder --recipe AppImageBuilder.yml --skip-test
 
       - name: Rename AppImage assets
