@@ -67,6 +67,7 @@ Ricorda di aggiornare `msix_version` in `pubspec.yaml` quando cambi versione.
 ## Linux AppImage (Auto Update)
 Prerequisiti:
 - appimage-builder installato
+- dipendenze di build: clang, cmake, ninja-build, pkg-config, libgtk-3-dev, liblzma-dev
 
 Build AppImage:
 1) flutter build linux --release

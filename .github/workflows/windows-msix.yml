@@ -78,15 +78,16 @@ jobs:
           $tag = $env:GITHUB_REF_NAME
           $installerUrl = "https://github.com/Nokitomo/AniVerse/releases/download/$tag/AniVerse.appinstaller"
           $msixUrl = "https://github.com/Nokitomo/AniVerse/releases/download/$tag/AniVerse.msix"
-          @"
-<?xml version="1.0" encoding="utf-8"?>
-<AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018" Uri="$installerUrl" Version="$msixVersion">
-  <MainPackage Name="com.nokitomo.aniverse" Publisher="CN=Nokitomo" Version="$msixVersion" ProcessorArchitecture="x64" Uri="$msixUrl" />
-  <UpdateSettings>
-    <OnLaunch HoursBetweenUpdateChecks="6" ShowPrompt="true" UpdateBlocksActivation="false" />
-  </UpdateSettings>
-</AppInstaller>
-"@ | Set-Content -Path AniVerse.appinstaller -Encoding UTF8
+          $xml = @(
+            '<?xml version="1.0" encoding="utf-8"?>',
+            "<AppInstaller xmlns=`"http://schemas.microsoft.com/appx/appinstaller/2018`" Uri=`"$installerUrl`" Version=`"$msixVersion`">",
+            "  <MainPackage Name=`"com.nokitomo.aniverse`" Publisher=`"CN=Nokitomo`" Version=`"$msixVersion`" ProcessorArchitecture=`"x64`" Uri=`"$msixUrl`" />",
+            "  <UpdateSettings>",
+            "    <OnLaunch HoursBetweenUpdateChecks=`"6`" ShowPrompt=`"true`" UpdateBlocksActivation=`"false`" />",
+            "  </UpdateSettings>",
+            "</AppInstaller>"
+          ) -join "`n"
+          $xml | Set-Content -Path AniVerse.appinstaller -Encoding UTF8
 
       - name: Upload MSIX artifact
         uses: actions/upload-artifact@v4
