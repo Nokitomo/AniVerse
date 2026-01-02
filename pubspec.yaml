@@ -3,7 +3,7 @@ description: Un app per guardare anime
 
 publish_to: "none"
 
-version: 1.1.16+1
+version: 1.1.17+1
 
 environment:
   sdk: ">=3.3.1 <4.0.0"
@@ -134,7 +134,7 @@ msix_config:
   publisher_display_name: Nokitomo
   identity_name: com.nokitomo.aniverse
   publisher: CN=Nokitomo
-  msix_version: 1.1.16.0
+  msix_version: 1.1.17.0
   logo_path: assets/images/splash.png
   capabilities: internetClient
   sign_msix: false
