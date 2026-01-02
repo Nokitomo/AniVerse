@@ -42,6 +42,7 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   int _retryCount = 0;
   int _retryTicket = 0;
   static const int _maxRetryCount = 2;
+  String? _errorMessage;
 
   int getSeconds() {
     var currTime = animeModel.episodes[widget.episodeId.toString()];
@@ -117,9 +118,23 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _meeduPlayerController.onDataStatusChanged.listen((event) {
       if (event == DataStatus.loaded) {
+        _retryCount = 0;
+        _retrying = false;
+        if (_errorMessage != null && mounted) {
+          setState(() {
+            _errorMessage = null;
+          });
+        }
         _meeduPlayerController.setFullScreen(true, context);
       }
       if (event == DataStatus.error) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = _retryCount < _maxRetryCount
+                ? "Server non disponibile, riprovo..."
+                : "Server momentaneamente non disponibile. Riprova tra qualche secondo.";
+          });
+        }
         _refreshStreamUrlOnce();
       }
     });
@@ -169,7 +184,12 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         seekTo: position,
       );
     } catch (_) {
-      // keep the existing error state if refresh fails
+      if (mounted && _retryCount >= _maxRetryCount) {
+        setState(() {
+          _errorMessage =
+              "Server momentaneamente non disponibile. Riprova tra qualche secondo.";
+        });
+      }
     } finally {
       _retrying = false;
     }
@@ -235,8 +255,33 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: MeeduVideoPlayer(
-        controller: _meeduPlayerController,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: MeeduVideoPlayer(
+              controller: _meeduPlayerController,
+            ),
+          ),
+          if (_errorMessage != null)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  color: Colors.black.withOpacity(0.35),
+                  padding: const EdgeInsets.all(24),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: widget.colorScheme.onBackground,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
