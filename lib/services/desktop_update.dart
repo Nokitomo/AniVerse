@@ -160,15 +160,16 @@ class DesktopUpdateService {
     await _downloadFile(info.downloadUrl, targetPath);
 
     final scriptPath = p.join(tempDir.path, 'aniverse-update.sh');
+    final currentPid = pid;
     final script = StringBuffer()
       ..writeln('#!/bin/sh')
       ..writeln('set -e')
-      ..writeln('PID=${pid}')
+      ..writeln('PID=$currentPid')
       ..writeln('APPIMAGE="${_escapeShell(appImagePath)}"')
       ..writeln('NEW_IMAGE="${_escapeShell(targetPath)}"')
-      ..writeln('while kill -0 $PID 2>/dev/null; do sleep 1; done')
-      ..writeln('mv "$NEW_IMAGE" "$APPIMAGE"')
-      ..writeln('chmod +x "$APPIMAGE"');
+      ..writeln('while kill -0 \\$PID 2>/dev/null; do sleep 1; done')
+      ..writeln('mv "\\$NEW_IMAGE" "\\$APPIMAGE"')
+      ..writeln('chmod +x "\\$APPIMAGE"');
     final scriptFile = File(scriptPath);
     await scriptFile.writeAsString(script.toString());
     await Process.run('chmod', ['+x', scriptPath]);
