@@ -21,6 +21,7 @@ class AnimeCard extends StatefulWidget {
 
 class AnimeCardState extends State<AnimeCard> {
   final heroTag = UniqueKey();
+  bool _hovered = false;
 
   @override
   void initState() {
@@ -41,9 +42,19 @@ class AnimeCardState extends State<AnimeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
+      hoverColor: colorScheme.primary.withOpacity(0.08),
+      mouseCursor: SystemMouseCursors.click,
+      onHover: (value) {
+        if (_hovered != value) {
+          setState(() {
+            _hovered = value;
+          });
+        }
+      },
       onTap: () async {
         await Get.toNamed(
           RouteGenerator.loadAnime,
@@ -53,8 +64,9 @@ class AnimeCardState extends State<AnimeCard> {
       child: SizedBox(
         width: 150,
         child: Card(
-          elevation: 0,
-          color: Theme.of(context).colorScheme.background,
+          elevation: _hovered ? 4 : 0,
+          shadowColor: colorScheme.primary.withOpacity(0.2),
+          color: colorScheme.background,
           child: Column(
             children: [
               Expanded(

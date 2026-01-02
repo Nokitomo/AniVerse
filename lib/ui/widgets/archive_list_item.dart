@@ -19,6 +19,7 @@ class ArchiveListItem extends StatefulWidget {
 
 class _ArchiveListItemState extends State<ArchiveListItem> {
   final heroTag = UniqueKey();
+  bool _hovered = false;
 
   List<String> _genreNames() {
     final genres = widget.anime.genres;
@@ -46,6 +47,7 @@ class _ArchiveListItemState extends State<ArchiveListItem> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final genreLabel = _genreNames().join(', ');
     final studioYear = _studioYearLabel();
     final type = widget.anime.type.isNotEmpty ? widget.anime.type : 'TV';
@@ -55,6 +57,15 @@ class _ArchiveListItemState extends State<ArchiveListItem> {
 
     return InkWell(
       borderRadius: BorderRadius.circular(10),
+      hoverColor: colorScheme.primary.withOpacity(0.06),
+      mouseCursor: SystemMouseCursors.click,
+      onHover: (value) {
+        if (_hovered != value) {
+          setState(() {
+            _hovered = value;
+          });
+        }
+      },
       onTap: () async {
         await Get.toNamed(
           RouteGenerator.loadAnime,
@@ -62,8 +73,9 @@ class _ArchiveListItemState extends State<ArchiveListItem> {
         );
       },
       child: Card(
-        elevation: 0,
-        color: Theme.of(context).colorScheme.surface,
+        elevation: _hovered ? 3 : 0,
+        shadowColor: colorScheme.primary.withOpacity(0.2),
+        color: colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
