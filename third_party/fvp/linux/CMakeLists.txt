@@ -72,9 +72,17 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE mdk)
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
 get_filename_component(MDK_LIB_DIR ${MDK_LIBRARY} DIRECTORY)
+set(MDK_FFMPEG_LIB "")
+if(EXISTS ${MDK_LIB_DIR}/libffmpeg.so.6)
+  set(MDK_FFMPEG_LIB ${MDK_LIB_DIR}/libffmpeg.so.6)
+elseif(EXISTS ${MDK_LIB_DIR}/libffmpeg.so.8)
+  set(MDK_FFMPEG_LIB ${MDK_LIB_DIR}/libffmpeg.so.8)
+else()
+  message(FATAL_ERROR "libffmpeg.so not found in ${MDK_LIB_DIR}")
+endif()
 set(fvp_bundled_libraries
     ${MDK_LIBRARY}.0
-    ${MDK_LIB_DIR}/libffmpeg.so.6
+    ${MDK_FFMPEG_LIB}
     ${MDK_LIB_DIR}/libc++.so.1
   PARENT_SCOPE
 )
