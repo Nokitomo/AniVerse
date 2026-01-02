@@ -39,6 +39,9 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   int index = 0;
   bool firstTime = true;
   bool _retrying = false;
+  int _retryCount = 0;
+  int _retryTicket = 0;
+  static const int _maxRetryCount = 2;
 
   int getSeconds() {
     var currTime = animeModel.episodes[widget.episodeId.toString()];
@@ -106,6 +109,7 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       DataSource(
         type: DataSourceType.network,
         source: widget.url,
+        httpHeaders: _buildStreamHeaders(),
       ),
       autoplay: true,
       seekTo: Duration(seconds: getSeconds()),
@@ -138,27 +142,46 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _refreshStreamUrlOnce() async {
-    if (_retrying || !mounted) {
+    if (_retrying || !mounted || _retryCount >= _maxRetryCount) {
       return;
     }
     _retrying = true;
+    _retryCount += 1;
+    final ticket = ++_retryTicket;
+    final delaySeconds = _retryCount;
     try {
+      await Future.delayed(Duration(seconds: delaySeconds));
+      if (!mounted || ticket != _retryTicket) {
+        return;
+      }
       final position = _meeduPlayerController.position.value;
       final freshUrl = await fetchEpisodeStreamUrl(widget.episodeId);
-      if (!mounted) {
+      if (!mounted || ticket != _retryTicket) {
         return;
       }
       _meeduPlayerController.setDataSource(
         DataSource(
           type: DataSourceType.network,
           source: freshUrl,
+          httpHeaders: _buildStreamHeaders(),
         ),
         autoplay: true,
         seekTo: position,
       );
     } catch (_) {
       // keep the existing error state if refresh fails
+    } finally {
+      _retrying = false;
     }
+  }
+
+  Map<String, String> _buildStreamHeaders() {
+    return const {
+      "User-Agent":
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+      "Referer": "https://www.animeunity.so/",
+      "Origin": "https://www.animeunity.so",
+    };
   }
 
   @override
