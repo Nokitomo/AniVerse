@@ -62,9 +62,9 @@ class DynamicThemeBuilder extends StatelessWidget {
             theme: theme,
             home: Shortcuts(
               shortcuts: {
-                const LogicalKeySet(LogicalKeyboardKey.backspace): const _BackIntent(),
-                const LogicalKeySet(LogicalKeyboardKey.escape): const _BackIntent(),
-                const LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const _SearchIntent(),
+                LogicalKeySet(LogicalKeyboardKey.backspace): const _BackIntent(),
+                LogicalKeySet(LogicalKeyboardKey.escape): const _BackIntent(),
+                LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const _SearchIntent(),
               },
               child: Actions(
                 actions: {
