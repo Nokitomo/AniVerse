@@ -39,6 +39,17 @@ Note:
 - cp -R build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
 - cd build/ios/ipa && zip -r AniVerse-unsigned.ipa Payload
 
+## Desktop (Windows / macOS / Linux)
+Prerequisiti: abilitare il target desktop in Flutter.
+- flutter config --enable-windows-desktop
+- flutter config --enable-macos-desktop
+- flutter config --enable-linux-desktop
+
+Build:
+- Windows: flutter build windows --release
+- macOS: flutter build macos --release
+- Linux: flutter build linux --release
+
 ## Note
 - Le build iOS non sono firmate. Usare tool di sideload dopo la build.
 - Il minSdk Android e legato alla configurazione Flutter e ai vincoli NDK.

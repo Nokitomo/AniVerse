@@ -18,6 +18,7 @@
 - Aggiornamenti OTA (solo Android)
 - Backup / Ripristino database ObjectBox
 - Icona Android tematizzata (adaptive icon)
+- Supporto desktop base (Windows / macOS / Linux)
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.
@@ -28,3 +29,5 @@
 ## Warning noti
 - file_picker genera warning in CI ma non blocca le build.
 - Alcuni plugin in third_party usano API Android/iOS deprecate.
+- Aggiornamenti OTA disponibili solo su Android (iOS via download IPA).
+- Export database su desktop salva in Download (fallback Documenti se Download non disponibile).
