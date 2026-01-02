@@ -23,11 +23,14 @@ class LoadingPageForAnime extends StatefulWidget {
 
 class LoadingPageForAnimeState extends State<LoadingPageForAnime> {
   bool error = false;
+  bool _cancelled = false;
   Future<void> setUp() async {
     try {
       var response = await searchAnime(title: widget.animeObj.title);
+      if (!mounted || _cancelled) return;
       push(response);
     } catch (e) {
+      if (!mounted || _cancelled) return;
       Get.toNamed(
         RouteGenerator.error,
       );
@@ -35,6 +38,9 @@ class LoadingPageForAnimeState extends State<LoadingPageForAnime> {
   }
 
   void push(List<dynamic> response) {
+    if (!mounted || _cancelled) {
+      return;
+    }
     for (var anime in response) {
       if (searchToObj(anime).id == widget.animeObj.id) {
         Get.offNamed(
@@ -57,6 +63,12 @@ class LoadingPageForAnimeState extends State<LoadingPageForAnime> {
   void initState() {
     setUp();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _cancelled = true;
+    super.dispose();
   }
 
   @override
