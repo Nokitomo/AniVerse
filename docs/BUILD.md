@@ -64,16 +64,6 @@ Nota: l'update automatico funziona solo se l'app e' installata tramite
 il file .appinstaller.
 Ricorda di aggiornare `msix_version` in `pubspec.yaml` quando cambi versione.
 
-## Linux AppImage (Auto Update)
-Prerequisiti:
-- appimage-builder installato
-- dipendenze di build: clang, cmake, ninja-build, pkg-config, libgtk-3-dev, liblzma-dev
-
-Build AppImage:
-1) flutter build linux --release
-2) appimage-builder --recipe AppImageBuilder.yml
-3) Pubblica AniVerse-x86_64.AppImage e AniVerse-x86_64.AppImage.zsync su GitHub Release
-Ricorda di aggiornare `AppImageBuilder.yml` con la versione corretta.
 
 ## Note
 - Le build iOS non sono firmate. Usare tool di sideload dopo la build.

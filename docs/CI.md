@@ -36,12 +36,6 @@ Secret richieste:
 - WINDOWS_PFX_BASE64
 - WINDOWS_PFX_PASSWORD
 
-## linux-appimage.yml
-- Trigger: push di tag che matchano v*
-- Compila Linux release
-- Crea AppImage + zsync
-- Carica artifact
-- Pubblica GitHub release (solo run su tag)
 
 ## Esecuzioni manuali
 Se esegui un workflow manualmente (workflow_dispatch), carica solo gli artifact.
