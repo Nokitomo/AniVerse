@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:aniverse/helper/api.dart';
 import 'package:aniverse/services/internal_api.dart';
+import 'package:aniverse/services/desktop_update.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,8 @@ class UpdateApp extends StatelessWidget {
   UpdateApp({super.key});
 
   final InternalAPI internalAPI = Get.find<InternalAPI>();
+  final DesktopUpdateService desktopUpdateService =
+      Get.find<DesktopUpdateService>();
 
   beginUpdate(tag) async {
     var url = getLatestAndroidApkUrl(tag);
@@ -195,13 +198,48 @@ class UpdateApp extends StatelessWidget {
   }
 
   checkUpdate() async {
-    if (!Platform.isAndroid && !Platform.isIOS) {
-      Fluttertoast.showToast(
-        msg: "Aggiornamenti disponibili solo su Android e iOS",
+    Fluttertoast.showToast(msg: "Controllo aggiornamenti...");
+
+    if (Platform.isWindows || Platform.isLinux) {
+      final info = await desktopUpdateService.checkForUpdates();
+      if (info == null) {
+        Fluttertoast.showToast(
+          msg: "Errore durante il controllo degli aggiornamenti",
+        );
+        return;
+      }
+      if (!info.available) {
+        Fluttertoast.showToast(msg: "L'app e' gia' aggiornata :D");
+        return;
+      }
+
+      Get.dialog(
+        AlertDialog(
+          title: const Text("Aggiornamento disponibile"),
+          content: Text(
+            Platform.isWindows
+                ? "Su Windows l'aggiornamento e' gestito da App Installer."
+                : "Su Linux l'aggiornamento aggiornera' l'AppImage e richiede un riavvio.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text("Annulla"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Get.back();
+                await desktopUpdateService.applyUpdate(info);
+              },
+              child: const Text("Aggiorna"),
+            ),
+          ],
+        ),
       );
       return;
     }
-    Fluttertoast.showToast(msg: "Controllo aggiornamenti...");
 
     String latestTag = await getLatestReleaseTag();
     String current = await internalAPI.getVersion();

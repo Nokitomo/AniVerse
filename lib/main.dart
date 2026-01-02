@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'dart:io';
 
 import 'package:aniverse/services/internal_db.dart';
+import 'package:aniverse/services/desktop_update.dart';
 
 import 'package:flutter_meedu_videoplayer/meedu_player.dart';
 
@@ -31,6 +32,10 @@ void main() async {
   InternalAPI internalApi = InternalAPI();
   await internalApi.initialize();
   Get.put(internalApi);
+
+  final desktopUpdateService = DesktopUpdateService(internalApi: internalApi);
+  desktopUpdateService.startBackgroundChecks();
+  Get.put(desktopUpdateService);
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
