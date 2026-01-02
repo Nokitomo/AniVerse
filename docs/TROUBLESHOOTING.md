@@ -18,8 +18,8 @@ Se la build desktop fallisce con errori su "default_package" in file_picker,
 assicurati che il plugin desktop sia registrato con `dartPluginClass`
 in `third_party/file_picker/pubspec.yaml`.
 
-## Windows build: ffmpeg-6.dll mancante (fvp)
-Se la build Windows fallisce con un errore su `ffmpeg-6.dll` dentro `mdk-sdk`,
+## Windows build: ffmpeg DLL mancante (fvp)
+Se la build Windows fallisce con un errore su `ffmpeg-6.dll` o `ffmpeg-8.dll` dentro `mdk-sdk`,
 assicurati che il download del SDK MDK sia completato o lascia che CMake lo
 riscarichi automaticamente dalla URL indicata in `third_party/fvp/windows/CMakeLists.txt`.
 

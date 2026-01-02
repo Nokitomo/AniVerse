@@ -74,11 +74,21 @@ if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID MATCHES "[xX]64") # msvc
 endif()
 set(MDK_SDK_SAVE ${CMAKE_CURRENT_SOURCE_DIR}/mdk-sdk-windows-desktop-vs2022.7z)
 set(MDK_SDK_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/mdk-sdk)
-set(MDK_REQUIRED_DLL ${MDK_SDK_ROOT}/bin/ffmpeg-6.dll)
+set(MDK_FFMPEG_DLL "")
 if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID MATCHES "[xX]64")
-  set(MDK_REQUIRED_DLL ${MDK_SDK_ROOT}/bin/x64/ffmpeg-6.dll)
+  if(EXISTS ${MDK_SDK_ROOT}/bin/x64/ffmpeg-6.dll)
+    set(MDK_FFMPEG_DLL ${MDK_SDK_ROOT}/bin/x64/ffmpeg-6.dll)
+  elseif(EXISTS ${MDK_SDK_ROOT}/bin/x64/ffmpeg-8.dll)
+    set(MDK_FFMPEG_DLL ${MDK_SDK_ROOT}/bin/x64/ffmpeg-8.dll)
+  endif()
+else()
+  if(EXISTS ${MDK_SDK_ROOT}/bin/ffmpeg-6.dll)
+    set(MDK_FFMPEG_DLL ${MDK_SDK_ROOT}/bin/ffmpeg-6.dll)
+  elseif(EXISTS ${MDK_SDK_ROOT}/bin/ffmpeg-8.dll)
+    set(MDK_FFMPEG_DLL ${MDK_SDK_ROOT}/bin/ffmpeg-8.dll)
+  endif()
 endif()
-if(NOT EXISTS ${MDK_SDK_ROOT}/lib/cmake/FindMDK.cmake OR NOT EXISTS ${MDK_REQUIRED_DLL})
+if(NOT EXISTS ${MDK_SDK_ROOT}/lib/cmake/FindMDK.cmake OR "${MDK_FFMPEG_DLL}" STREQUAL "")
   if(EXISTS ${MDK_SDK_ROOT})
     file(REMOVE_RECURSE ${MDK_SDK_ROOT})
   endif()
@@ -104,9 +114,14 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE mdk)
 # external build triggered from this build file.
 get_filename_component(MDK_LIB_DIR ${MDK_LIBRARY} DIRECTORY)
 string(REPLACE "/lib/" "/bin/" MDK_BIN_DIR ${MDK_LIB_DIR})
+if(EXISTS ${MDK_BIN_DIR}/ffmpeg-6.dll)
+  set(MDK_FFMPEG_DLL ${MDK_BIN_DIR}/ffmpeg-6.dll)
+elseif(EXISTS ${MDK_BIN_DIR}/ffmpeg-8.dll)
+  set(MDK_FFMPEG_DLL ${MDK_BIN_DIR}/ffmpeg-8.dll)
+endif()
 set(fvp_bundled_libraries
     ${MDK_BIN_DIR}/mdk.dll
-    ${MDK_BIN_DIR}/ffmpeg-6.dll
+    ${MDK_FFMPEG_DLL}
     ${MDK_BIN_DIR}/libass.dll
   PARENT_SCOPE
 )
