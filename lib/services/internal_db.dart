@@ -12,7 +12,11 @@ class ObjectBox {
   }
 
   static Future<ObjectBox> create() async {
-    final docsDir = Platform.isAndroid ? await getApplicationDocumentsDirectory() : await getLibraryDirectory();
+    final docsDir = Platform.isAndroid
+        ? await getApplicationDocumentsDirectory()
+        : (Platform.isIOS || Platform.isMacOS)
+            ? await getLibraryDirectory()
+            : await getApplicationSupportDirectory();
 
     final store = await openStore(
       directory: p.join(docsDir.path, "obx"),

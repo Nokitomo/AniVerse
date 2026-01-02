@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:aniverse/helper/api.dart';
 import 'package:aniverse/objectbox.g.dart';
 import 'package:aniverse/services/internal_api.dart';
@@ -15,6 +17,9 @@ class DbBackup extends StatelessWidget {
   final InternalAPI internalAPI = Get.find<InternalAPI>();
 
   checkPermissions(context) async {
+    if (!Platform.isAndroid) {
+      return 1;
+    }
     PermissionStatus status = await Permission.storage.request();
     PermissionStatus a = await Permission.manageExternalStorage.request();
     if (!a.isGranted && !status.isGranted) {

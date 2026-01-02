@@ -21,10 +21,20 @@ class InternalAPI {
 
   final String repoLink = "https://github.com/Nokitomo/AniVerse";
 
+  Future<Directory> _getBaseDirectory() async {
+    if (Platform.isAndroid) {
+      return p_provider.getApplicationDocumentsDirectory();
+    }
+    if (Platform.isIOS || Platform.isMacOS) {
+      return p_provider.getLibraryDirectory();
+    }
+    return p_provider.getApplicationSupportDirectory();
+  }
+
   Future<void> initialize() async {
     prefs = await SharedPreferences.getInstance();
 
-    final docsDir = Platform.isAndroid ? await p_provider.getApplicationDocumentsDirectory() : await p_provider.getLibraryDirectory();
+    final docsDir = await _getBaseDirectory();
 
     dbPath = p.join(docsDir.path, "obx");
     dbBackupPath = p.join(docsDir.path, "obx-backup");
@@ -77,11 +87,13 @@ class InternalAPI {
 
   Future<int> exportDb() async {
     String path = "/sdcard/Documents/obx.zip";
-    if (Platform.isIOS) {
-      var dir = await p_provider.getApplicationDocumentsDirectory();
-
+    if (!Platform.isAndroid) {
+      Directory? dir;
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        dir = await p_provider.getDownloadsDirectory();
+      }
+      dir ??= await p_provider.getApplicationDocumentsDirectory();
       path = p.join(dir.path, "obx.zip");
-      debugPrint(path);
     }
 
     try {

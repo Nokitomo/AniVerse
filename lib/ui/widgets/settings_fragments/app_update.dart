@@ -195,6 +195,12 @@ class UpdateApp extends StatelessWidget {
   }
 
   checkUpdate() async {
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      Fluttertoast.showToast(
+        msg: "Aggiornamenti disponibili solo su Android e iOS",
+      );
+      return;
+    }
     Fluttertoast.showToast(msg: "Controllo aggiornamenti...");
 
     String latestTag = await getLatestReleaseTag();
