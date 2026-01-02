@@ -50,6 +50,30 @@ Build:
 - macOS: flutter build macos --release
 - Linux: flutter build linux --release
 
+## Windows MSIX (Auto Update)
+Prerequisiti:
+- Windows SDK (MakeAppx + SignTool)
+- Certificato di firma (PFX)
+
+Build MSIX (workflow consigliato in CI):
+1) flutter build windows --release
+2) Genera MSIX e firma con certificato PFX
+3) Genera file AniVerse.appinstaller e pubblicalo su GitHub Release
+
+Nota: l'update automatico funziona solo se l'app e' installata tramite
+il file .appinstaller.
+Ricorda di aggiornare `msix_version` in `pubspec.yaml` quando cambi versione.
+
+## Linux AppImage (Auto Update)
+Prerequisiti:
+- appimage-builder installato
+
+Build AppImage:
+1) flutter build linux --release
+2) appimage-builder --recipe AppImageBuilder.yml
+3) Pubblica AniVerse-x86_64.AppImage e AniVerse-x86_64.AppImage.zsync su GitHub Release
+Ricorda di aggiornare `AppImageBuilder.yml` con la versione corretta.
+
 ## Note
 - Le build iOS non sono firmate. Usare tool di sideload dopo la build.
 - Il minSdk Android e legato alla configurazione Flutter e ai vincoli NDK.

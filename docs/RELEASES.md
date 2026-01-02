@@ -29,3 +29,23 @@ Asset richiesto:
 
 URL usato dall'app:
 - https://github.com/Nokitomo/AniVerse/releases/download/vX.Y.Z/AniVerse-unsigned.ipa
+
+## Aggiornamenti Windows (MSIX)
+L'update automatico richiede installazione tramite file App Installer.
+
+Asset richiesti:
+- AniVerse.msix
+- AniVerse.appinstaller
+
+URL usato dall'app per l'installer:
+- https://github.com/Nokitomo/AniVerse/releases/latest/download/AniVerse.appinstaller
+
+## Aggiornamenti Linux (AppImage)
+L'update automatico usa AppImage + zsync.
+
+Asset richiesti:
+- AniVerse-x86_64.AppImage
+- AniVerse-x86_64.AppImage.zsync
+
+URL usato dall'app per il download:
+- https://github.com/Nokitomo/AniVerse/releases/latest/download/AniVerse-x86_64.AppImage

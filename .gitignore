@@ -47,6 +47,8 @@ app.*.map.json
 
 certs/
 *.jks
+*.pfx
+windows/certs/
 android/key.properties
 
 forks/*

@@ -1,0 +1,106 @@
+name: Windows MSIX Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Build Windows (release)
+        run: flutter build windows --release
+
+      - name: Update MSIX version
+        shell: pwsh
+        run: |
+          $versionLine = Select-String -Path pubspec.yaml -Pattern '^version:' | Select-Object -First 1
+          $raw = $versionLine.Line -replace 'version:\s*', ''
+          $parts = $raw.Split('+')
+          $base = $parts[0]
+          $build = if ($parts.Length -gt 1) { $parts[1] } else { '0' }
+          $msixVersion = "$base.$build"
+          (Get-Content pubspec.yaml) -replace '^  msix_version:.*', "  msix_version: $msixVersion" | Set-Content pubspec.yaml
+
+      - name: Install msix tool
+        run: dart pub global activate msix
+
+      - name: Create MSIX
+        run: dart pub global run msix:create
+
+      - name: Decode signing certificate
+        shell: pwsh
+        env:
+          PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        run: |
+          if (-not $env:PFX_BASE64) { throw "WINDOWS_PFX_BASE64 missing" }
+          New-Item -ItemType Directory -Force -Path windows/certs | Out-Null
+          [IO.File]::WriteAllBytes("windows/certs/AniVerse.pfx", [Convert]::FromBase64String($env:PFX_BASE64))
+          $env:PFX_PASSWORD | Out-File -FilePath windows/certs/pfx-pass.txt -Encoding ascii
+
+      - name: Sign MSIX
+        shell: pwsh
+        env:
+          PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        run: |
+          $msix = Get-ChildItem -Recurse -Filter *.msix | Select-Object -First 1
+          if (-not $msix) { throw "MSIX not found" }
+          signtool sign /fd SHA256 /a /f windows/certs/AniVerse.pfx /p $env:PFX_PASSWORD /tr http://timestamp.digicert.com /td SHA256 $msix.FullName
+          Copy-Item $msix.FullName -Destination AniVerse.msix -Force
+
+      - name: Create App Installer
+        shell: pwsh
+        run: |
+          $versionLine = Select-String -Path pubspec.yaml -Pattern '^version:' | Select-Object -First 1
+          $raw = $versionLine.Line -replace 'version:\s*', ''
+          $parts = $raw.Split('+')
+          $base = $parts[0]
+          $build = if ($parts.Length -gt 1) { $parts[1] } else { '0' }
+          $msixVersion = "$base.$build"
+          $tag = $env:GITHUB_REF_NAME
+          $installerUrl = "https://github.com/Nokitomo/AniVerse/releases/download/$tag/AniVerse.appinstaller"
+          $msixUrl = "https://github.com/Nokitomo/AniVerse/releases/download/$tag/AniVerse.msix"
+          @"
+<?xml version="1.0" encoding="utf-8"?>
+<AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018" Uri="$installerUrl" Version="$msixVersion">
+  <MainPackage Name="com.nokitomo.aniverse" Publisher="CN=Nokitomo" Version="$msixVersion" ProcessorArchitecture="x64" Uri="$msixUrl" />
+  <UpdateSettings>
+    <OnLaunch HoursBetweenUpdateChecks="6" ShowPrompt="true" UpdateBlocksActivation="false" />
+  </UpdateSettings>
+</AppInstaller>
+"@ | Set-Content -Path AniVerse.appinstaller -Encoding UTF8
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AniVerse-windows-msix
+          path: |
+            AniVerse.msix
+            AniVerse.appinstaller
+
+      - name: Publish GitHub Release (tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          files: |
+            AniVerse.msix
+            AniVerse.appinstaller

@@ -23,6 +23,14 @@ Se la build Windows fallisce con un errore su `ffmpeg-6.dll` o `ffmpeg-8.dll` de
 assicurati che il download del SDK MDK sia completato o lascia che CMake lo
 riscarichi automaticamente dalla URL indicata in `third_party/fvp/windows/CMakeLists.txt`.
 
+## Windows update: App Installer non apre
+Verifica che l'app sia installata tramite il file `AniVerse.appinstaller`
+e che l'URL in `docs/RELEASES.md` punti a GitHub Release.
+
+## Linux update: AppImage non aggiorna
+L'update automatico funziona solo se l'app e' eseguita da AppImage.
+Controlla che `AniVerse-x86_64.AppImage.zsync` sia presente nella release.
+
 ## PiP non funziona su iOS
 - Richiede iOS 14+.
 - PiP si attiva solo tramite pulsante (auto PiP in background e disabilitato nel codice).
