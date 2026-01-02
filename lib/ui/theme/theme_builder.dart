@@ -21,7 +21,8 @@ bool _isTextEditing() {
   if (context == null) {
     return false;
   }
-  return EditableText.maybeOf(context) != null;
+  return context.widget is EditableText ||
+      context.findAncestorWidgetOfExactType<EditableText>() != null;
 }
 
 class DynamicThemeBuilder extends StatelessWidget {
@@ -60,10 +61,10 @@ class DynamicThemeBuilder extends StatelessWidget {
             title: title,
             theme: theme,
             home: Shortcuts(
-              shortcuts: const {
-                LogicalKeySet(LogicalKeyboardKey.backspace): _BackIntent(),
-                LogicalKeySet(LogicalKeyboardKey.escape): _BackIntent(),
-                LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): _SearchIntent(),
+              shortcuts: {
+                const LogicalKeySet(LogicalKeyboardKey.backspace): const _BackIntent(),
+                const LogicalKeySet(LogicalKeyboardKey.escape): const _BackIntent(),
+                const LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const _SearchIntent(),
               },
               child: Actions(
                 actions: {

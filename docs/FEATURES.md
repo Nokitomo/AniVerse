@@ -20,7 +20,7 @@
 - Icona Android tematizzata (adaptive icon)
 - Supporto desktop base (Windows / macOS / Linux)
 - Hover states su card desktop
-- Shortcut desktop: Backspace/Esc per indietro, Ctrl+F per ricerca
+- Shortcut desktop: Backspace/Esc per indietro, Ctrl+F per ricerca, Spazio per play/pausa nel player
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.

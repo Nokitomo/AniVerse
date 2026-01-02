@@ -31,6 +31,10 @@ class PlayerPage extends StatefulWidget {
   State<PlayerPage> createState() => PlayerPageState();
 }
 
+class _TogglePlayIntent extends Intent {
+  const _TogglePlayIntent();
+}
+
 class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   late MeeduPlayerController _meeduPlayerController;
   late AnimeModel animeModel;
@@ -254,7 +258,7 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    final playerBody = Material(
       child: Stack(
         children: [
           Positioned.fill(
@@ -282,6 +286,30 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               ),
             ),
         ],
+      ),
+    );
+
+    return Shortcuts(
+      shortcuts: {
+        const LogicalKeySet(LogicalKeyboardKey.space): const _TogglePlayIntent(),
+      },
+      child: Actions(
+        actions: {
+          _TogglePlayIntent: CallbackAction<_TogglePlayIntent>(
+            onInvoke: (intent) {
+              if (_meeduPlayerController.playerStatus.playing) {
+                _meeduPlayerController.pause();
+              } else {
+                _meeduPlayerController.play();
+              }
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          child: playerBody,
+        ),
       ),
     );
   }
