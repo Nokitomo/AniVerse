@@ -5,6 +5,7 @@
 - Lista episodi con selezione range (blocchi da 120)
 - Header dettagli con controlli episodio fissi e compatti durante lo scroll
 - Descrizione con link "Leggi tutto" nella scheda dettaglio
+- Refresh automatico dello stream al primo errore del player
 - Pagina Archivio con filtri, ricerca, scroll infinito, filtri scorrevoli e header auto-hide
 - Pagina Esplora con sezioni tematiche (top-anime e categorie archivio)
 - Pagina Calendario con programmazione per giorno

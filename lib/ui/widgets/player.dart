@@ -37,6 +37,7 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Box objBox = Get.find<ObjectBox>().store.box<AnimeModel>();
   int index = 0;
   bool firstTime = true;
+  bool _retrying = false;
 
   int getSeconds() {
     var currTime = animeModel.episodes[widget.episodeId.toString()];
@@ -113,6 +114,9 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       if (event == DataStatus.loaded) {
         _meeduPlayerController.setFullScreen(true, context);
       }
+      if (event == DataStatus.error) {
+        _refreshStreamUrlOnce();
+      }
     });
 
     _meeduPlayerController.onFullscreenChanged.listen((event) {
@@ -130,6 +134,30 @@ class PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     trackTime();
 
     super.initState();
+  }
+
+  Future<void> _refreshStreamUrlOnce() async {
+    if (_retrying || !mounted) {
+      return;
+    }
+    _retrying = true;
+    try {
+      final position = _meeduPlayerController.position.value;
+      final freshUrl = await fetchEpisodeStreamUrl(widget.episodeId);
+      if (!mounted) {
+        return;
+      }
+      _meeduPlayerController.setDataSource(
+        DataSource(
+          type: DataSourceType.network,
+          source: freshUrl,
+        ),
+        autoplay: true,
+        seekTo: position,
+      );
+    } catch (_) {
+      // keep the existing error state if refresh fails
+    }
   }
 
   @override
