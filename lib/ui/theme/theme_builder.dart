@@ -7,14 +7,6 @@ import 'package:get/route_manager.dart';
 import 'package:aniverse/theme.dart';
 import 'package:aniverse/ui/pages/search_page.dart';
 
-class _BackIntent extends Intent {
-  const _BackIntent();
-}
-
-class _SearchIntent extends Intent {
-  const _SearchIntent();
-}
-
 bool _isTextEditing() {
   final focus = FocusManager.instance.primaryFocus;
   final context = focus?.context;
@@ -23,6 +15,34 @@ bool _isTextEditing() {
   }
   return context.widget is EditableText ||
       context.findAncestorWidgetOfExactType<EditableText>() != null;
+}
+
+KeyEventResult _handleAppKey(BuildContext context, KeyEvent event) {
+  if (_isTextEditing()) {
+    return KeyEventResult.ignored;
+  }
+  if (event is! KeyDownEvent) {
+    return KeyEventResult.ignored;
+  }
+
+  final key = event.logicalKey;
+  if (key == LogicalKeyboardKey.backspace ||
+      key == LogicalKeyboardKey.escape) {
+    Navigator.of(context).maybePop();
+    return KeyEventResult.handled;
+  }
+
+  if (key == LogicalKeyboardKey.keyF &&
+      HardwareKeyboard.instance.logicalKeysPressed.any(
+        (k) =>
+            k == LogicalKeyboardKey.controlLeft ||
+            k == LogicalKeyboardKey.controlRight,
+      )) {
+    Get.to(() => const SearchPage());
+    return KeyEventResult.handled;
+  }
+
+  return KeyEventResult.ignored;
 }
 
 class DynamicThemeBuilder extends StatelessWidget {
@@ -60,37 +80,10 @@ class DynamicThemeBuilder extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: title,
             theme: theme,
-            home: Shortcuts(
-              shortcuts: {
-                LogicalKeySet(LogicalKeyboardKey.backspace): const _BackIntent(),
-                LogicalKeySet(LogicalKeyboardKey.escape): const _BackIntent(),
-                LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const _SearchIntent(),
-              },
-              child: Actions(
-                actions: {
-                  _BackIntent: CallbackAction<_BackIntent>(
-                    onInvoke: (intent) {
-                      if (_isTextEditing()) {
-                        return null;
-                      }
-                      return Navigator.of(context).maybePop();
-                    },
-                  ),
-                  _SearchIntent: CallbackAction<_SearchIntent>(
-                    onInvoke: (intent) {
-                      if (_isTextEditing()) {
-                        return null;
-                      }
-                      Get.to(() => const SearchPage());
-                      return null;
-                    },
-                  ),
-                },
-                child: Focus(
-                  autofocus: true,
-                  child: home,
-                ),
-              ),
+            home: Focus(
+              autofocus: true,
+              onKeyEvent: (node, event) => _handleAppKey(context, event),
+              child: home,
             ),
             onGenerateRoute: RouteGenerator.generateRoute,
             initialRoute: RouteGenerator.mainPage,
