@@ -33,8 +33,8 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
   int _pageIndex = 0;
   bool _userInteracting = false;
   static const int _initialPrefetchCount = 6;
-  static const int _initialPrefetchBatchSize = 6;
-  static const int _backgroundPrefetchBatchSize = 3;
+  static const int _initialPrefetchBatchSize = 10;
+  static const int _backgroundPrefetchBatchSize = 5;
 
   @override
   void initState() {
