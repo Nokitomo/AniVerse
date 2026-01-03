@@ -38,9 +38,9 @@ class _HomePageState extends State<HomePage> {
       return _carouselCache!;
     }
 
-    List popularItems = [];
-    List latestItems = [];
-    List topItems = [];
+    List<AnimeClass> popularItems = [];
+    List<AnimeClass> latestItems = [];
+    List<AnimeClass> topItems = [];
 
     try {
       final popularRaw = await popularAnime();
