@@ -30,6 +30,7 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
   bool _loading = true;
   bool _error = false;
   int _currentIndex = 0;
+  int _pageIndex = 0;
   bool _userInteracting = false;
 
   @override
@@ -63,7 +64,15 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
         _loading = false;
         _error = false;
         _currentIndex = 0;
+        _pageIndex = items.isEmpty ? 0 : items.length * 1000;
       });
+      if (_items.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_controller.hasClients) {
+            _controller.jumpToPage(_pageIndex);
+          }
+        });
+      }
       _startAutoPlay();
     } catch (_) {
       if (!mounted) {
@@ -85,7 +94,8 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
       if (_userInteracting || !_controller.hasClients) {
         return;
       }
-      final next = (_currentIndex + 1) % _items.length;
+      _pageIndex += 1;
+      final next = _pageIndex;
       _controller.animateToPage(
         next,
         duration: const Duration(milliseconds: 450),
@@ -104,11 +114,12 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
     });
   }
 
-  void _goTo(int index) {
+  void _goTo(int delta) {
     if (!_controller.hasClients || _items.isEmpty) {
       return;
     }
-    final clamped = index.clamp(0, _items.length - 1);
+    _pageIndex += delta;
+    final clamped = _pageIndex;
     _controller.animateToPage(
       clamped,
       duration: const Duration(milliseconds: 350),
@@ -179,14 +190,20 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
             },
             child: PageView.builder(
               controller: _controller,
-              itemCount: _items.length,
               onPageChanged: (index) {
+                if (_items.isEmpty) {
+                  return;
+                }
                 setState(() {
-                  _currentIndex = index;
+                  _pageIndex = index;
+                  _currentIndex = index % _items.length;
                 });
               },
               itemBuilder: (context, index) {
-                final anime = _items[index];
+                if (_items.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                final anime = _items[index % _items.length];
                 final imageUrl = anime.bannerUrl.isNotEmpty
                     ? anime.bannerUrl
                     : anime.imageUrl;
@@ -201,10 +218,23 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
                         placeholder: (context, url) => Container(
                           color: colorScheme.surfaceVariant,
                         ),
-                        errorWidget: (context, url, error) => Container(
-                          color: colorScheme.surfaceVariant,
-                          child: const Icon(Icons.warning_amber_rounded),
-                        ),
+                        errorWidget: (context, url, error) {
+                          if (imageUrl != anime.imageUrl &&
+                              anime.imageUrl.isNotEmpty) {
+                            return CachedNetworkImage(
+                              imageUrl: anime.imageUrl,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => Container(
+                                color: colorScheme.surfaceVariant,
+                                child: const Icon(Icons.warning_amber_rounded),
+                              ),
+                            );
+                          }
+                          return Container(
+                            color: colorScheme.surfaceVariant,
+                            child: const Icon(Icons.warning_amber_rounded),
+                          );
+                        },
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -278,7 +308,7 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
               bottom: 0,
               child: _CarouselArrow(
                 icon: Icons.chevron_left,
-                onTap: () => _goTo(_currentIndex - 1),
+                onTap: () => _goTo(-1),
               ),
             ),
           if (width > 700 && _items.length > 1)
@@ -288,7 +318,7 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
               bottom: 0,
               child: _CarouselArrow(
                 icon: Icons.chevron_right,
-                onTap: () => _goTo(_currentIndex + 1),
+                onTap: () => _goTo(1),
               ),
             ),
         ],

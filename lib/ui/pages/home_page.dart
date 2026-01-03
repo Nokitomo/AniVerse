@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> {
           if (banner != null && banner.isNotEmpty) {
             anime.bannerUrl = banner;
             updatedCache[key] = banner;
-          } else {
+          } else if (banner == '') {
             updatedCache[key] = '';
           }
         }),
