@@ -87,7 +87,7 @@ class InternalAPI {
   }
 
   static const String _bannerCacheKey = 'bannerCache';
-  static const String _bannerCacheDayKey = 'bannerCacheDay';
+  static const String _bannerCacheWeekKey = 'bannerCacheWeek';
 
   Map<String, String> getBannerCache() {
     final raw = prefs.getString(_bannerCacheKey);
@@ -108,24 +108,16 @@ class InternalAPI {
     return {};
   }
 
-  DateTime? getBannerCacheDay() {
-    final raw = prefs.getString(_bannerCacheDayKey);
-    if (raw == null || raw.isEmpty) {
-      return null;
-    }
-    return DateTime.tryParse(raw);
+  String getBannerCacheWeekKey() {
+    return prefs.getString(_bannerCacheWeekKey) ?? '';
   }
 
   Future<void> setBannerCache({
     required Map<String, String> cache,
-    required DateTime day,
+    required String weekKey,
   }) async {
-    final dayKey = DateTime(day.year, day.month, day.day)
-        .toIso8601String()
-        .split('T')
-        .first;
     await prefs.setString(_bannerCacheKey, jsonEncode(cache));
-    await prefs.setString(_bannerCacheDayKey, dayKey);
+    await prefs.setString(_bannerCacheWeekKey, weekKey);
   }
 
   Future<int> exportDb() async {

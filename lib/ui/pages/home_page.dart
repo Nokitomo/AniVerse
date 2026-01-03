@@ -27,15 +27,16 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<State<StatefulWidget>> continueKey = GlobalKey();
 
   static List<AnimeClass>? _carouselCache;
-  static DateTime? _carouselCacheDay;
+  static String _carouselCacheWeekKey = '';
   static final Set<int> _bannerRetryIds = {};
 
   Future<List<AnimeClass>> _loadCarouselItems() async {
     final now = DateTime.now();
+    final weekKey = _weekKey(now);
     if (_carouselCache != null &&
         _carouselCache!.isNotEmpty &&
-        _carouselCacheDay != null &&
-        _isSameDay(_carouselCacheDay!, now)) {
+        _carouselCacheWeekKey.isNotEmpty &&
+        _carouselCacheWeekKey == weekKey) {
       return _carouselCache!;
     }
 
@@ -128,31 +129,35 @@ class _HomePageState extends State<HomePage> {
 
     await _applyCarouselBanners(dedupedSelected);
 
-    final seed = _dailySeed();
+    final seed = _weeklySeed();
     dedupedSelected.shuffle(Random(seed));
     final result = dedupedSelected.take(20).toList();
     _carouselCache = result;
-    _carouselCacheDay = now;
+    _carouselCacheWeekKey = weekKey;
     return result;
   }
 
-  int _dailySeed() {
+  int _weeklySeed() {
     final now = DateTime.now();
-    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays + 1;
-    return now.year * 1000 + dayOfYear;
+    final weekKey = _weekKey(now);
+    return weekKey.hashCode;
   }
 
-  bool _isSameDay(DateTime left, DateTime right) {
-    return left.year == right.year &&
-        left.month == right.month &&
-        left.day == right.day;
+  String _weekKey(DateTime date) {
+    final jan4 = DateTime(date.year, 1, 4);
+    final jan4Weekday = jan4.weekday == 7 ? 0 : jan4.weekday;
+    final weekStart = jan4.subtract(Duration(days: jan4Weekday - 1));
+    final diffDays = date.difference(weekStart).inDays;
+    final weekNumber = (diffDays / 7).floor() + 1;
+    return "${date.year}-W$weekNumber";
   }
 
   Future<void> _applyCarouselBanners(List<AnimeClass> items) async {
     final now = DateTime.now();
-    final cachedDay = internalAPI.getBannerCacheDay();
+    final cachedWeekKey = internalAPI.getBannerCacheWeekKey();
+    final weekKey = _weekKey(now);
     final cache = internalAPI.getBannerCache();
-    if (cachedDay == null || !_isSameDay(cachedDay, now)) {
+    if (cachedWeekKey.isEmpty || cachedWeekKey != weekKey) {
       cache.clear();
     }
     final updatedCache = Map<String, String>.from(cache);
@@ -193,7 +198,7 @@ class _HomePageState extends State<HomePage> {
 
     await internalAPI.setBannerCache(
       cache: updatedCache,
-      day: now,
+      weekKey: weekKey,
     );
   }
 
