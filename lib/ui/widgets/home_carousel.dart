@@ -73,6 +73,10 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
           }
         });
       }
+      await _prefetchCarouselImages(_items);
+      if (!mounted) {
+        return;
+      }
       _startAutoPlay();
     } catch (_) {
       if (!mounted) {
@@ -133,6 +137,35 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
       RouteGenerator.loadAnime,
       arguments: [anime, heroTag],
     );
+  }
+
+  Future<void> _prefetchCarouselImages(List<AnimeClass> items) async {
+    if (!mounted || items.isEmpty) {
+      return;
+    }
+    final providers = <ImageProvider>[];
+    for (final anime in items) {
+      final primary = anime.bannerUrl.isNotEmpty
+          ? anime.bannerUrl
+          : anime.imageUrl;
+      if (primary.isNotEmpty) {
+        providers.add(CachedNetworkImageProvider(primary));
+      }
+      final alt = anime.bannerUrl.isNotEmpty
+          ? bannerFallbackUrl(anime.bannerUrl)
+          : '';
+      if (alt.isNotEmpty) {
+        providers.add(CachedNetworkImageProvider(alt));
+      }
+    }
+
+    const batchSize = 4;
+    for (var i = 0; i < providers.length; i += batchSize) {
+      final batch = providers.skip(i).take(batchSize);
+      await Future.wait(
+        batch.map((provider) => precacheImage(provider, context)),
+      );
+    }
   }
 
   double _carouselHeight(double width) {

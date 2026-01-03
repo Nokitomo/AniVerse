@@ -196,7 +196,7 @@ class _HomePageState extends State<HomePage> {
     }
     final updatedCache = Map<String, String>.from(cache);
 
-    const batchSize = 4;
+    const batchSize = 8;
     for (var i = 0; i < items.length; i += batchSize) {
       final batch = items.skip(i).take(batchSize);
       await Future.wait(
@@ -390,7 +390,7 @@ class _HomePageState extends State<HomePage> {
       final capacity = _maxCarouselItems - output.length;
       final needed = remaining < capacity ? remaining : capacity;
       final candidatesCount =
-          unique.length < needed + 4 ? unique.length : needed + 4;
+          unique.length < needed + 2 ? unique.length : needed + 2;
       final candidates = unique.take(candidatesCount).toList();
 
       await _applyCarouselBanners(candidates);
