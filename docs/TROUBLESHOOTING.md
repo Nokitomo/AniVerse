@@ -24,12 +24,10 @@ assicurati che il download del SDK MDK sia completato o lascia che CMake lo
 riscarichi automaticamente dalla URL indicata in `third_party/fvp/windows/CMakeLists.txt`.
 
 ## Windows update: App Installer non apre
-Verifica che l'app sia installata tramite il file `AniVerse.appinstaller`
-e che l'URL in `docs/RELEASES.md` punti a GitHub Release.
-
-## Linux update: AppImage non aggiorna
-L'update automatico funziona solo se l'app e' eseguita da AppImage.
-Controlla che `AniVerse-x86_64.AppImage.zsync` sia presente nella release.
+Verifica che l'app sia installata tramite `AniVerse.appinstaller` e che
+il link punti agli asset della GitHub Release. Se il protocollo
+`ms-appinstaller` e' disabilitato, riabilitalo nelle impostazioni di
+App Installer.
 
 ## PiP non funziona su iOS
 - Richiede iOS 14+.

@@ -133,6 +133,20 @@ class DesktopUpdateService {
   }
 
   Future<void> _launchWindowsInstaller() async {
+    final tempDir = await p_provider.getTemporaryDirectory();
+    final localPath = p.join(tempDir.path, 'AniVerse.appinstaller');
+    try {
+      await _downloadFile(_windowsAppInstallerUrl, localPath);
+      await Process.start(
+        'explorer',
+        [localPath],
+        runInShell: true,
+      );
+      return;
+    } catch (_) {
+      // Fallback al protocollo in caso di problemi nel download locale.
+    }
+
     final uri = Uri.parse(
       'ms-appinstaller:?source=${Uri.encodeComponent(_windowsAppInstallerUrl)}',
     );
