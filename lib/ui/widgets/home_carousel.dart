@@ -248,13 +248,14 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
             left: 12,
             right: 12,
             bottom: 10,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 6,
+              runSpacing: 6,
               children: List.generate(_items.length, (index) {
                 final isActive = index == _currentIndex;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
                   height: 3,
                   width: isActive ? 20 : 12,
                   decoration: BoxDecoration(

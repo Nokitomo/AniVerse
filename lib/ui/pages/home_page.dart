@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     try {
-      final topRaw = await fetchTopAnime(order: 'rating');
+      final topRaw = await _fetchTopRated();
       topItems = topRaw.map(popularToObj).toList();
     } catch (e) {
       debugPrint("Carousel: errore fetchTopAnime: $e");
@@ -125,6 +125,20 @@ class _HomePageState extends State<HomePage> {
     return left.year == right.year &&
         left.month == right.month &&
         left.day == right.day;
+  }
+
+  Future<List> _fetchTopRated() async {
+    try {
+      return await fetchTopAnime(order: 'rating');
+    } catch (_) {
+      // Alcuni endpoint rifiutano order=rating, prova fallback.
+    }
+    try {
+      return await fetchTopAnime(order: 'score');
+    } catch (_) {
+      // Ignora per fallback finale.
+    }
+    return await fetchTopAnime();
   }
 
   refresh() async {
