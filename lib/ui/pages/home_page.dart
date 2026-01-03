@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
 
   static List<AnimeClass>? _carouselCache;
   static DateTime? _carouselCacheDay;
+  static final Set<int> _bannerRetryIds = {};
 
   Future<List<AnimeClass>> _loadCarouselItems() async {
     final now = DateTime.now();
@@ -151,13 +152,17 @@ class _HomePageState extends State<HomePage> {
             final cachedValue = updatedCache[key] ?? '';
             if (cachedValue.isNotEmpty) {
               anime.bannerUrl = cachedValue;
+              return;
             }
-            return;
+            if (_bannerRetryIds.contains(anime.id)) {
+              return;
+            }
           }
           final banner = await fetchAnimeBannerUrl(
             animeId: anime.id,
             slug: anime.slug,
           );
+          _bannerRetryIds.add(anime.id);
           if (banner != null && banner.isNotEmpty) {
             anime.bannerUrl = banner;
             updatedCache[key] = banner;
