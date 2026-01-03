@@ -32,6 +32,9 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
   int _currentIndex = 0;
   int _pageIndex = 0;
   bool _userInteracting = false;
+  static const int _initialPrefetchCount = 6;
+  static const int _initialPrefetchBatchSize = 6;
+  static const int _backgroundPrefetchBatchSize = 3;
 
   @override
   void initState() {
@@ -73,11 +76,25 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
           }
         });
       }
-      await _prefetchCarouselImages(_items);
+      final initialPrefetch =
+          _items.take(_initialPrefetchCount).toList(growable: false);
+      await _prefetchCarouselImages(
+        initialPrefetch,
+        batchSize: _initialPrefetchBatchSize,
+      );
       if (!mounted) {
         return;
       }
       _startAutoPlay();
+      if (_items.length > _initialPrefetchCount) {
+        final remaining = _items.skip(_initialPrefetchCount).toList();
+        Future.microtask(() {
+          _prefetchCarouselImages(
+            remaining,
+            batchSize: _backgroundPrefetchBatchSize,
+          );
+        });
+      }
     } catch (_) {
       if (!mounted) {
         return;
@@ -139,7 +156,10 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
     );
   }
 
-  Future<void> _prefetchCarouselImages(List<AnimeClass> items) async {
+  Future<void> _prefetchCarouselImages(
+    List<AnimeClass> items, {
+    required int batchSize,
+  }) async {
     if (!mounted || items.isEmpty) {
       return;
     }
@@ -159,8 +179,10 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
       }
     }
 
-    const batchSize = 4;
     for (var i = 0; i < providers.length; i += batchSize) {
+      if (!mounted) {
+        return;
+      }
       final batch = providers.skip(i).take(batchSize);
       await Future.wait(
         batch.map((provider) => precacheImage(provider, context)),
