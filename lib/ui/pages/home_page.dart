@@ -130,6 +130,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _applyCarouselBanners(List<AnimeClass> items) async {
+    final now = DateTime.now();
+    final cachedDay = internalAPI.getBannerCacheDay();
+    final cache = internalAPI.getBannerCache();
+    if (cachedDay == null || !_isSameDay(cachedDay, now)) {
+      cache.clear();
+    }
+    final updatedCache = Map<String, String>.from(cache);
+
     const batchSize = 4;
     for (var i = 0; i < items.length; i += batchSize) {
       final batch = items.skip(i).take(batchSize);
@@ -138,16 +146,32 @@ class _HomePageState extends State<HomePage> {
           if (anime.bannerUrl.isNotEmpty || anime.slug.isEmpty) {
             return;
           }
+          final key = anime.id.toString();
+          if (updatedCache.containsKey(key)) {
+            final cachedValue = updatedCache[key] ?? '';
+            if (cachedValue.isNotEmpty) {
+              anime.bannerUrl = cachedValue;
+            }
+            return;
+          }
           final banner = await fetchAnimeBannerUrl(
             animeId: anime.id,
             slug: anime.slug,
           );
           if (banner != null && banner.isNotEmpty) {
             anime.bannerUrl = banner;
+            updatedCache[key] = banner;
+          } else {
+            updatedCache[key] = '';
           }
         }),
       );
     }
+
+    await internalAPI.setBannerCache(
+      cache: updatedCache,
+      day: now,
+    );
   }
 
   Future<List> _fetchTopRated() async {

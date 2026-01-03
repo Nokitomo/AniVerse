@@ -85,6 +85,48 @@ class InternalAPI {
     return prefs.getString(key) ?? '';
   }
 
+  static const String _bannerCacheKey = 'bannerCache';
+  static const String _bannerCacheDayKey = 'bannerCacheDay';
+
+  Map<String, String> getBannerCache() {
+    final raw = prefs.getString(_bannerCacheKey);
+    if (raw == null || raw.isEmpty) {
+      return {};
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return decoded.map((key, value) => MapEntry(
+              key.toString(),
+              value?.toString() ?? '',
+            ));
+      }
+    } catch (_) {
+      return {};
+    }
+    return {};
+  }
+
+  DateTime? getBannerCacheDay() {
+    final raw = prefs.getString(_bannerCacheDayKey);
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(raw);
+  }
+
+  Future<void> setBannerCache({
+    required Map<String, String> cache,
+    required DateTime day,
+  }) async {
+    final dayKey = DateTime(day.year, day.month, day.day)
+        .toIso8601String()
+        .split('T')
+        .first;
+    await prefs.setString(_bannerCacheKey, jsonEncode(cache));
+    await prefs.setString(_bannerCacheDayKey, dayKey);
+  }
+
   Future<int> exportDb() async {
     String path = "/sdcard/Documents/obx.zip";
     if (!Platform.isAndroid) {

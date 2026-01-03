@@ -139,25 +139,60 @@ Future<String?> fetchAnimeBannerUrl({
     return null;
   }
   final url = "$_baseHost/anime/$animeId-$slug";
-  try {
-    final document = await makeRequestAndGetDocument(url);
-    final candidates = document.getElementsByTagName('video-player');
-    final element = candidates.firstWhere(
-      (el) => el.attributes.containsKey('anime'),
-      orElse: () => candidates.isNotEmpty ? candidates.first : Element.tag('video-player'),
-    );
-    final raw = element.attributes['anime'];
-    if (raw == null || raw.isEmpty) {
-      return null;
+
+  for (var attempt = 0; attempt < 2; attempt++) {
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: _defaultHeaders,
+      );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        continue;
+      }
+      final body = response.body;
+      if (body.trim().isEmpty) {
+        continue;
+      }
+
+      final document = parse(body);
+      final candidates = document.getElementsByTagName('video-player');
+      final element = candidates.firstWhere(
+        (el) => el.attributes.containsKey('anime'),
+        orElse: () => candidates.isNotEmpty ? candidates.first : Element.tag('video-player'),
+      );
+      final raw = element.attributes['anime'];
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = _decodeHtmlAttribute(raw);
+        final data = jsonDecode(decoded);
+        if (data is Map && data['imageurl_cover'] is String) {
+          final value = (data['imageurl_cover'] as String).trim();
+          if (value.isNotEmpty) {
+            return value;
+          }
+        }
+      }
+
+      final direct = RegExp(
+        r'imageurl_cover\\\":\\\"([^\\\"]+)',
+      ).firstMatch(body);
+      if (direct != null) {
+        final value = direct.group(1)?.trim() ?? '';
+        if (value.isNotEmpty) {
+          return value.replaceAll('\\/', '/');
+        }
+      }
+      final escaped = RegExp(
+        r'imageurl_cover&quot;:&quot;([^&]+)&quot;',
+      ).firstMatch(body);
+      if (escaped != null) {
+        final value = escaped.group(1)?.trim() ?? '';
+        if (value.isNotEmpty) {
+          return value;
+        }
+      }
+    } catch (_) {
+      // retry once
     }
-    final decoded = _decodeHtmlAttribute(raw);
-    final data = jsonDecode(decoded);
-    if (data is Map && data['imageurl_cover'] is String) {
-      final value = (data['imageurl_cover'] as String).trim();
-      return value.isEmpty ? null : value;
-    }
-  } catch (_) {
-    return null;
   }
   return null;
 }
