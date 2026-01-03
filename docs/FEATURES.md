@@ -12,7 +12,7 @@
 - Pagina Calendario con programmazione per giorno
 - Riproduzione video (player Meedu)
 - Sezione "Riprendi a guardare" mostra episodio e progresso
-- Carosello in Home con selezione settimanale di anime (popolari, ultimi, top rating) e cache persistente
+- Carosello in Home con selezione settimanale di anime (popolari, ultimi, top rating), solo con banner, e cache persistente
 - Pulsante picture-in-picture (Android + iOS)
 - Tema chiaro / scuro
 - Tema dinamico (piattaforme supportate)

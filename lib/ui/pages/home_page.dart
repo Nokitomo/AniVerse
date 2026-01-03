@@ -29,6 +29,8 @@ class _HomePageState extends State<HomePage> {
   static List<AnimeClass>? _carouselCache;
   static String _carouselCacheWeekKey = '';
   static final Set<int> _bannerRetryIds = {};
+  static const int _maxCarouselItems = 20;
+  static const int _minCarouselItems = 10;
 
   Future<List<AnimeClass>> _loadCarouselItems() async {
     final now = DateTime.now();
@@ -71,97 +73,95 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<AnimeClass>> _buildCarouselList(String weekKey) async {
-    List<AnimeClass> popularItems = [];
-    List<AnimeClass> latestItems = [];
-    List<AnimeClass> topItems = [];
-
-    try {
-      final popularRaw = await popularAnime();
-      popularItems = popularRaw.map(popularToObj).toList();
-    } catch (e) {
-      debugPrint("Carousel: errore popularAnime: $e");
-    }
-
-    try {
-      final latestRaw = await latestAnime();
-      latestItems = latestRaw.map(latestToObj).toList();
-    } catch (e) {
-      debugPrint("Carousel: errore latestAnime: $e");
-    }
-
-    try {
-      final topRaw = await _fetchTopRated();
-      topItems = topRaw.map(popularToObj).toList();
-    } catch (e) {
-      debugPrint("Carousel: errore fetchTopAnime: $e");
-    }
-
-    if (popularItems.isEmpty && latestItems.isEmpty && topItems.isEmpty) {
-      throw Exception("Carousel: nessuna sorgente disponibile");
-    }
+    final usedIds = <int>{};
+    final popularState = _CarouselCategoryState(
+      target: 8,
+      page: 1,
+      lastPage: null,
+      loader: (page) async {
+        final pageData = await _fetchTopAnimePage(
+          page: page,
+          popular: true,
+        );
+        return _CarouselPageResult(
+          items: pageData.items.map(popularToObj).toList(),
+          hasMore: pageData.hasMore,
+        );
+      },
+    );
+    final latestState = _CarouselCategoryState(
+      target: 6,
+      page: 1,
+      lastPage: null,
+      loader: (page) async {
+        final items = await fetchLatestAnimePage(page: page);
+        return _CarouselPageResult(
+          items: items.map(latestToObj).toList(),
+          hasMore: items.isNotEmpty,
+        );
+      },
+    );
+    final topState = _CarouselCategoryState(
+      target: 6,
+      page: 1,
+      lastPage: null,
+      loader: (page) async {
+        final pageData = await _fetchTopRatedPage(page: page);
+        return _CarouselPageResult(
+          items: pageData.items.map(popularToObj).toList(),
+          hasMore: pageData.hasMore,
+        );
+      },
+    );
 
     final selected = <AnimeClass>[];
-    final usedIds = <int>{};
+    await _collectCategoryWithBanners(
+      state: popularState,
+      usedIds: usedIds,
+      output: selected,
+      maxPages: 2,
+    );
+    await _collectCategoryWithBanners(
+      state: latestState,
+      usedIds: usedIds,
+      output: selected,
+      maxPages: 2,
+    );
+    await _collectCategoryWithBanners(
+      state: topState,
+      usedIds: usedIds,
+      output: selected,
+      maxPages: 2,
+    );
 
-    void addFrom(List<AnimeClass> source, int limit) {
-      var added = 0;
-      for (final item in source) {
-        if (added >= limit) {
-          break;
-        }
-        if (item.id == 0 || usedIds.contains(item.id)) {
-          continue;
-        }
-        usedIds.add(item.id);
-        selected.add(item);
-        added += 1;
-      }
-    }
-
-    addFrom(popularItems, 8);
-    addFrom(latestItems, 6);
-    addFrom(topItems, 6);
-
-    if (selected.length < 20) {
-      final allSources = <AnimeClass>[
-        ...popularItems,
-        ...latestItems,
-        ...topItems,
-      ];
-      for (final item in allSources) {
-        if (selected.length >= 20) {
-          break;
-        }
-        if (item.id == 0 || usedIds.contains(item.id)) {
-          continue;
-        }
-        usedIds.add(item.id);
-        selected.add(item);
-      }
+    if (selected.length < _minCarouselItems) {
+      await _collectCategoryWithBanners(
+        state: popularState,
+        usedIds: usedIds,
+        output: selected,
+        maxPages: 6,
+      );
+      await _collectCategoryWithBanners(
+        state: latestState,
+        usedIds: usedIds,
+        output: selected,
+        maxPages: 6,
+      );
+      await _collectCategoryWithBanners(
+        state: topState,
+        usedIds: usedIds,
+        output: selected,
+        maxPages: 6,
+      );
     }
 
     final dedupedSelected = _dedupeCarouselItems(selected);
-    if (dedupedSelected.length < 20) {
-      final allSources = <AnimeClass>[
-        ...popularItems,
-        ...latestItems,
-        ...topItems,
-      ];
-      for (final item in allSources) {
-        if (dedupedSelected.length >= 20) {
-          break;
-        }
-        if (_isCarouselDuplicate(dedupedSelected, item)) {
-          continue;
-        }
-        dedupedSelected.add(item);
-      }
+    if (dedupedSelected.isEmpty) {
+      throw Exception("Carousel: nessuna sorgente disponibile");
     }
-
     final seed = _weeklySeed();
     dedupedSelected.shuffle(Random(seed));
-    final result = dedupedSelected.take(20).toList();
-    await _applyCarouselBanners(result);
+    final result = dedupedSelected.take(_maxCarouselItems).toList();
     await internalAPI.setHomeCarouselCache(
       items: result.map((item) => item.toCarouselJson()).toList(),
       weekKey: weekKey,
@@ -292,18 +292,101 @@ class _HomePageState extends State<HomePage> {
     return false;
   }
 
-  Future<List> _fetchTopRated() async {
+  Future<_TopAnimePage> _fetchTopRatedPage({required int page}) async {
     try {
-      return await fetchTopAnime(order: 'rating');
-    } catch (_) {
-      // Alcuni endpoint rifiutano order=rating, prova fallback.
-    }
+      return await _fetchTopAnimePage(
+        page: page,
+        order: 'rating',
+      );
+    } catch (_) {}
     try {
-      return await fetchTopAnime(order: 'score');
-    } catch (_) {
-      // Ignora per fallback finale.
+      return await _fetchTopAnimePage(
+        page: page,
+        order: 'score',
+      );
+    } catch (_) {}
+    return await _fetchTopAnimePage(page: page);
+  }
+
+  Future<_TopAnimePage> _fetchTopAnimePage({
+    required int page,
+    bool popular = false,
+    String? order,
+  }) async {
+    final pageData = await fetchTopAnimePage(
+      page: page,
+      popular: popular,
+      order: order,
+    );
+    final items = pageData['data'] ?? [];
+    final currentPage = pageData['current_page'] ?? page;
+    final lastPage = pageData['last_page'] ?? page;
+    final hasMore = currentPage < lastPage;
+    return _TopAnimePage(
+      items: items,
+      hasMore: hasMore,
+    );
+  }
+
+  Future<void> _collectCategoryWithBanners({
+    required _CarouselCategoryState state,
+    required Set<int> usedIds,
+    required List<AnimeClass> output,
+    required int maxPages,
+  }) async {
+    while (state.page <= maxPages &&
+        output.length < _maxCarouselItems &&
+        state.collected < state.target) {
+      _CarouselPageResult result;
+      try {
+        result = await state.loader(state.page);
+      } catch (e) {
+        debugPrint("Carousel: errore fetch categoria: $e");
+        break;
+      }
+      state.page += 1;
+      if (result.items.isEmpty) {
+        break;
+      }
+
+      final unique = <AnimeClass>[];
+      for (final item in result.items) {
+        if (item.id == 0 || usedIds.contains(item.id)) {
+          continue;
+        }
+        if (_isCarouselDuplicate(output, item)) {
+          continue;
+        }
+        unique.add(item);
+      }
+
+      if (unique.isEmpty) {
+        if (!result.hasMore) {
+          break;
+        }
+        continue;
+      }
+
+      await _applyCarouselBanners(unique);
+      for (final item in unique) {
+        if (item.bannerUrl.isEmpty) {
+          continue;
+        }
+        if (item.id > 0) {
+          usedIds.add(item.id);
+        }
+        output.add(item);
+        state.collected += 1;
+        if (state.collected >= state.target ||
+            output.length >= _maxCarouselItems) {
+          break;
+        }
+      }
+
+      if (!result.hasMore) {
+        break;
+      }
     }
-    return await fetchTopAnime();
   }
 
   refresh() async {
@@ -383,5 +466,40 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+class _CarouselCategoryState {
+  _CarouselCategoryState({
+    required this.target,
+    required this.page,
+    required this.lastPage,
+    required this.loader,
+  });
+
+  final int target;
+  int page;
+  int? lastPage;
+  int collected = 0;
+  final Future<_CarouselPageResult> Function(int page) loader;
+}
+
+class _CarouselPageResult {
+  _CarouselPageResult({
+    required this.items,
+    required this.hasMore,
+  });
+
+  final List<AnimeClass> items;
+  final bool hasMore;
+}
+
+class _TopAnimePage {
+  _TopAnimePage({
+    required this.items,
+    required this.hasMore,
+  });
+
+  final List items;
+  final bool hasMore;
 }
 
