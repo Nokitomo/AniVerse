@@ -187,13 +187,16 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
               },
               itemBuilder: (context, index) {
                 final anime = _items[index];
+                final imageUrl = anime.bannerUrl.isNotEmpty
+                    ? anime.bannerUrl
+                    : anime.imageUrl;
                 return InkWell(
                   onTap: () => _openAnime(anime),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       CachedNetworkImage(
-                        imageUrl: anime.imageUrl,
+                        imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: colorScheme.surfaceVariant,

@@ -17,6 +17,7 @@ class AnimeClass {
   int? year;
   String episodeLabel;
   String progressLabel;
+  String bannerUrl;
 
   DateTime? lastSeen;
 
@@ -36,6 +37,7 @@ class AnimeClass {
     this.lastSeen,
     this.episodeLabel = '',
     this.progressLabel = '',
+    this.bannerUrl = '',
   });
 
   AnimeModel getModel() {

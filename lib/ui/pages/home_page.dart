@@ -107,6 +107,8 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
+    await _applyCarouselBanners(selected);
+
     final seed = _dailySeed();
     selected.shuffle(Random(seed));
     final result = selected.take(20).toList();
@@ -125,6 +127,27 @@ class _HomePageState extends State<HomePage> {
     return left.year == right.year &&
         left.month == right.month &&
         left.day == right.day;
+  }
+
+  Future<void> _applyCarouselBanners(List<AnimeClass> items) async {
+    const batchSize = 4;
+    for (var i = 0; i < items.length; i += batchSize) {
+      final batch = items.skip(i).take(batchSize);
+      await Future.wait(
+        batch.map((anime) async {
+          if (anime.bannerUrl.isNotEmpty || anime.slug.isEmpty) {
+            return;
+          }
+          final banner = await fetchAnimeBannerUrl(
+            animeId: anime.id,
+            slug: anime.slug,
+          );
+          if (banner != null && banner.isNotEmpty) {
+            anime.bannerUrl = banner;
+          }
+        }),
+      );
+    }
   }
 
   Future<List> _fetchTopRated() async {

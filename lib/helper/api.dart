@@ -131,6 +131,37 @@ Future<List<Element>> getElements(
   }
 }
 
+Future<String?> fetchAnimeBannerUrl({
+  required int animeId,
+  required String slug,
+}) async {
+  if (animeId <= 0 || slug.trim().isEmpty) {
+    return null;
+  }
+  final url = "$_baseHost/anime/$animeId-$slug";
+  try {
+    final document = await makeRequestAndGetDocument(url);
+    final candidates = document.getElementsByTagName('video-player');
+    final element = candidates.firstWhere(
+      (el) => el.attributes.containsKey('anime'),
+      orElse: () => candidates.isNotEmpty ? candidates.first : Element.tag('video-player'),
+    );
+    final raw = element.attributes['anime'];
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    final decoded = _decodeHtmlAttribute(raw);
+    final data = jsonDecode(decoded);
+    if (data is Map && data['imageurl_cover'] is String) {
+      final value = (data['imageurl_cover'] as String).trim();
+      return value.isEmpty ? null : value;
+    }
+  } catch (_) {
+    return null;
+  }
+  return null;
+}
+
 Future<Map<String, dynamic>> fetchArchivioMeta() async {
   final document = await makeRequestAndGetDocument(
     "$_baseHost/archivio?hidebar=true",
