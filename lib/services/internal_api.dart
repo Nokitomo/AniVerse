@@ -88,6 +88,8 @@ class InternalAPI {
 
   static const String _bannerCacheKey = 'bannerCache';
   static const String _bannerCacheWeekKey = 'bannerCacheWeek';
+  static const String _homeCarouselCacheKey = 'homeCarouselCache';
+  static const String _homeCarouselCacheWeekKey = 'homeCarouselCacheWeek';
 
   Map<String, String> getBannerCache() {
     final raw = prefs.getString(_bannerCacheKey);
@@ -118,6 +120,36 @@ class InternalAPI {
   }) async {
     await prefs.setString(_bannerCacheKey, jsonEncode(cache));
     await prefs.setString(_bannerCacheWeekKey, weekKey);
+  }
+
+  List<Map<String, dynamic>> getHomeCarouselCache() {
+    final raw = prefs.getString(_homeCarouselCacheKey);
+    if (raw == null || raw.isEmpty) {
+      return [];
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        return decoded.whereType<Map>().map((item) {
+          return item.cast<String, dynamic>();
+        }).toList();
+      }
+    } catch (_) {
+      return [];
+    }
+    return [];
+  }
+
+  String getHomeCarouselCacheWeekKey() {
+    return prefs.getString(_homeCarouselCacheWeekKey) ?? '';
+  }
+
+  Future<void> setHomeCarouselCache({
+    required List<Map<String, dynamic>> items,
+    required String weekKey,
+  }) async {
+    await prefs.setString(_homeCarouselCacheKey, jsonEncode(items));
+    await prefs.setString(_homeCarouselCacheWeekKey, weekKey);
   }
 
   Future<int> exportDb() async {

@@ -39,7 +39,38 @@ class _HomePageState extends State<HomePage> {
         _carouselCacheWeekKey == weekKey) {
       return _carouselCache!;
     }
+    final persisted = _loadCarouselCacheFromPrefs(weekKey);
+    if (persisted.isNotEmpty) {
+      _carouselCache = persisted;
+      _carouselCacheWeekKey = weekKey;
+      _refreshCarouselCache(weekKey);
+      return persisted;
+    }
 
+    return await _buildCarouselList(weekKey);
+  }
+
+  List<AnimeClass> _loadCarouselCacheFromPrefs(String weekKey) {
+    final cachedWeekKey = internalAPI.getHomeCarouselCacheWeekKey();
+    if (cachedWeekKey.isEmpty || cachedWeekKey != weekKey) {
+      return [];
+    }
+    final cachedItems = internalAPI.getHomeCarouselCache();
+    if (cachedItems.isEmpty) {
+      return [];
+    }
+    return cachedItems
+        .map((item) => AnimeClass.fromCarouselJson(item))
+        .toList();
+  }
+
+  Future<void> _refreshCarouselCache(String weekKey) async {
+    final refreshed = await _buildCarouselList(weekKey);
+    _carouselCache = refreshed;
+    _carouselCacheWeekKey = weekKey;
+  }
+
+  Future<List<AnimeClass>> _buildCarouselList(String weekKey) async {
     List<AnimeClass> popularItems = [];
     List<AnimeClass> latestItems = [];
     List<AnimeClass> topItems = [];
@@ -127,11 +158,14 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    await _applyCarouselBanners(dedupedSelected);
-
     final seed = _weeklySeed();
     dedupedSelected.shuffle(Random(seed));
     final result = dedupedSelected.take(20).toList();
+    await _applyCarouselBanners(result);
+    await internalAPI.setHomeCarouselCache(
+      items: result.map((item) => item.toCarouselJson()).toList(),
+      weekKey: weekKey,
+    );
     _carouselCache = result;
     _carouselCacheWeekKey = weekKey;
     return result;

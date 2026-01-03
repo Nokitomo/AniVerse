@@ -52,6 +52,31 @@ class AnimeClass {
   }
 
   get toModel => getModel();
+
+  Map<String, dynamic> toCarouselJson() {
+    return {
+      'id': id,
+      'title': title,
+      'imageUrl': imageUrl,
+      'slug': slug,
+      'bannerUrl': bannerUrl,
+    };
+  }
+
+  static AnimeClass fromCarouselJson(Map<String, dynamic> json) {
+    return AnimeClass(
+      title: json['title']?.toString() ?? '',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}') ?? 0,
+      description: '',
+      episodes: const [],
+      status: '',
+      genres: const [],
+      episodesCount: 0,
+      slug: json['slug']?.toString() ?? '',
+      bannerUrl: json['bannerUrl']?.toString() ?? '',
+    );
+  }
 }
 
 String normalizeImageUrl(String? url) {
