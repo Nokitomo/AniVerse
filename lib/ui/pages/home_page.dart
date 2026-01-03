@@ -243,7 +243,8 @@ class _HomePageState extends State<HomePage> {
 
     for (final item in items) {
       final id = item.id;
-      final titleKey = item.title.trim().toLowerCase();
+      final titleKey = _normalizeCarouselTitle(item.title);
+      final isDubbed = _isDubbedTitle(item.title);
       if (id > 0 && seenIds.contains(id)) {
         continue;
       }
@@ -251,7 +252,10 @@ class _HomePageState extends State<HomePage> {
       if (titleKey.isNotEmpty && seenTitles.containsKey(titleKey)) {
         final index = seenTitles[titleKey]!;
         final existing = result[index];
-        if (existing.bannerUrl.isEmpty && item.bannerUrl.isNotEmpty) {
+        final existingDubbed = _isDubbedTitle(existing.title);
+        final shouldReplace = (!existingDubbed && isDubbed) ||
+            (existing.bannerUrl.isEmpty && item.bannerUrl.isNotEmpty);
+        if (shouldReplace) {
           result[index] = item;
         }
         if (id > 0) {
@@ -280,16 +284,31 @@ class _HomePageState extends State<HomePage> {
         }
       }
     }
-    final titleKey = candidate.title.trim().toLowerCase();
+    final titleKey = _normalizeCarouselTitle(candidate.title);
     if (titleKey.isEmpty) {
       return false;
     }
     for (final item in items) {
-      if (item.title.trim().toLowerCase() == titleKey) {
+      if (_normalizeCarouselTitle(item.title) == titleKey) {
+        final existingDubbed = _isDubbedTitle(item.title);
+        final candidateDubbed = _isDubbedTitle(candidate.title);
+        if (!existingDubbed && candidateDubbed) {
+          return false;
+        }
         return true;
       }
     }
     return false;
+  }
+
+  String _normalizeCarouselTitle(String title) {
+    var normalized = title.trim().toLowerCase();
+    normalized = normalized.replaceAll(RegExp(r'\s*\(ita\)\s*$'), '');
+    return normalized.trim();
+  }
+
+  bool _isDubbedTitle(String title) {
+    return title.toLowerCase().contains('(ita)');
   }
 
   Future<_TopAnimePage> _fetchTopRatedPage({required int page}) async {
@@ -367,8 +386,15 @@ class _HomePageState extends State<HomePage> {
         continue;
       }
 
-      await _applyCarouselBanners(unique);
-      for (final item in unique) {
+      final remaining = state.target - state.collected;
+      final capacity = _maxCarouselItems - output.length;
+      final needed = remaining < capacity ? remaining : capacity;
+      final candidatesCount =
+          unique.length < needed + 4 ? unique.length : needed + 4;
+      final candidates = unique.take(candidatesCount).toList();
+
+      await _applyCarouselBanners(candidates);
+      for (final item in candidates) {
         if (item.bannerUrl.isEmpty) {
           continue;
         }
