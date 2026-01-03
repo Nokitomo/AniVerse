@@ -166,7 +166,10 @@ Future<String?> fetchAnimeBannerUrl({
         final data = jsonDecode(decoded);
         if (data is Map && data['imageurl_cover'] is String) {
           final value = (data['imageurl_cover'] as String).trim();
-          return value.isEmpty ? '' : value;
+          if (value.isEmpty) {
+            return '';
+          }
+          return normalizeBannerUrl(value);
         }
       }
 
@@ -180,12 +183,12 @@ Future<String?> fetchAnimeBannerUrl({
         }
         final normalized = value.replaceAll('\\/', '/');
         if (normalized.startsWith('http')) {
-          return normalized;
+          return normalizeBannerUrl(normalized);
         }
         try {
           final decoded = jsonDecode('"$value"');
           final decodedValue = decoded.toString().trim();
-          return decodedValue.isEmpty ? '' : decodedValue;
+          return decodedValue.isEmpty ? '' : normalizeBannerUrl(decodedValue);
         } catch (_) {
           return null;
         }
@@ -195,7 +198,7 @@ Future<String?> fetchAnimeBannerUrl({
       ).firstMatch(body);
       if (escaped != null) {
         final value = escaped.group(1)?.trim() ?? '';
-        return value.isEmpty ? '' : value;
+        return value.isEmpty ? '' : normalizeBannerUrl(value);
       }
     } catch (_) {
       // retry once

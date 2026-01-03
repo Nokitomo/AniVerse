@@ -83,6 +83,29 @@ String normalizeImageUrl(String? url) {
   return url;
 }
 
+String normalizeBannerUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return '';
+  }
+
+  Uri? uri;
+  try {
+    uri = Uri.parse(url);
+  } catch (_) {
+    return url;
+  }
+
+  final host = uri.host.toLowerCase();
+  if (host.contains('anilist.co') && uri.path.contains('/banner/')) {
+    final filename = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
+    if (filename.isNotEmpty) {
+      return 'https://img.animeunity.so/anime/$filename';
+    }
+  }
+
+  return url;
+}
+
 AnimeClass searchToObj(dynamic json) {
   final episodes = json['episodes'];
   final genres = json['genres'];

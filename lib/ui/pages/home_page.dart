@@ -109,10 +109,17 @@ class _HomePageState extends State<HomePage> {
     }
 
     await _applyCarouselBanners(selected);
+    final candidates = <AnimeClass>[
+      ...selected,
+      ...popularItems,
+      ...latestItems,
+      ...topItems,
+    ];
+    final deduped = _dedupeCarouselItems(candidates);
 
     final seed = _dailySeed();
-    selected.shuffle(Random(seed));
-    final result = selected.take(20).toList();
+    deduped.shuffle(Random(seed));
+    final result = deduped.take(20).toList();
     _carouselCache = result;
     _carouselCacheDay = now;
     return result;
@@ -177,6 +184,40 @@ class _HomePageState extends State<HomePage> {
       cache: updatedCache,
       day: now,
     );
+  }
+
+  List<AnimeClass> _dedupeCarouselItems(List<AnimeClass> items) {
+    final seenIds = <int>{};
+    final seenTitles = <String, int>{};
+    final result = <AnimeClass>[];
+
+    for (final item in items) {
+      final id = item.id;
+      final titleKey = item.title.trim().toLowerCase();
+      if (id > 0 && seenIds.contains(id)) {
+        continue;
+      }
+
+      if (titleKey.isNotEmpty && seenTitles.containsKey(titleKey)) {
+        final index = seenTitles[titleKey]!;
+        final existing = result[index];
+        if (existing.bannerUrl.isEmpty && item.bannerUrl.isNotEmpty) {
+          result[index] = item;
+        }
+        if (id > 0) {
+          seenIds.add(id);
+        }
+        continue;
+      }
+
+      if (id > 0) {
+        seenIds.add(id);
+      }
+      seenTitles[titleKey] = result.length;
+      result.add(item);
+    }
+
+    return result;
   }
 
   Future<List> _fetchTopRated() async {
