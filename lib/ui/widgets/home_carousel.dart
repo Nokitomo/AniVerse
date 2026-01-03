@@ -146,6 +146,23 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
     return raw;
   }
 
+  Widget _buildFallbackImage(AnimeClass anime, ColorScheme colorScheme) {
+    if (anime.imageUrl.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: anime.imageUrl,
+        fit: BoxFit.cover,
+        errorWidget: (context, url, error) => Container(
+          color: colorScheme.surfaceVariant,
+          child: const Icon(Icons.warning_amber_rounded),
+        ),
+      );
+    }
+    return Container(
+      color: colorScheme.surfaceVariant,
+      child: const Icon(Icons.warning_amber_rounded),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -207,6 +224,9 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
                 final imageUrl = anime.bannerUrl.isNotEmpty
                     ? anime.bannerUrl
                     : anime.imageUrl;
+                final bannerAlt = anime.bannerUrl.isNotEmpty
+                    ? bannerFallbackUrl(anime.bannerUrl)
+                    : '';
                 return InkWell(
                   onTap: () => _openAnime(anime),
                   child: Stack(
@@ -219,21 +239,15 @@ class _HomeHeroCarouselState extends State<HomeHeroCarousel> {
                           color: colorScheme.surfaceVariant,
                         ),
                         errorWidget: (context, url, error) {
-                          if (imageUrl != anime.imageUrl &&
-                              anime.imageUrl.isNotEmpty) {
+                          if (bannerAlt.isNotEmpty && bannerAlt != imageUrl) {
                             return CachedNetworkImage(
-                              imageUrl: anime.imageUrl,
+                              imageUrl: bannerAlt,
                               fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => Container(
-                                color: colorScheme.surfaceVariant,
-                                child: const Icon(Icons.warning_amber_rounded),
-                              ),
+                              errorWidget: (context, url, error) =>
+                                  _buildFallbackImage(anime, colorScheme),
                             );
                           }
-                          return Container(
-                            color: colorScheme.surfaceVariant,
-                            child: const Icon(Icons.warning_amber_rounded),
-                          );
+                          return _buildFallbackImage(anime, colorScheme);
                         },
                       ),
                       Container(

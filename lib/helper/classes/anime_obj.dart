@@ -83,7 +83,7 @@ String normalizeImageUrl(String? url) {
   return url;
 }
 
-String normalizeBannerUrl(String? url) {
+String bannerFallbackUrl(String? url) {
   if (url == null || url.isEmpty) {
     return '';
   }
@@ -103,7 +103,7 @@ String normalizeBannerUrl(String? url) {
     }
   }
 
-  return url;
+  return '';
 }
 
 AnimeClass searchToObj(dynamic json) {

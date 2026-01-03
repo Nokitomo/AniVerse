@@ -108,18 +108,29 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    await _applyCarouselBanners(selected);
-    final candidates = <AnimeClass>[
-      ...selected,
-      ...popularItems,
-      ...latestItems,
-      ...topItems,
-    ];
-    final deduped = _dedupeCarouselItems(candidates);
+    final dedupedSelected = _dedupeCarouselItems(selected);
+    if (dedupedSelected.length < 20) {
+      final allSources = <AnimeClass>[
+        ...popularItems,
+        ...latestItems,
+        ...topItems,
+      ];
+      for (final item in allSources) {
+        if (dedupedSelected.length >= 20) {
+          break;
+        }
+        if (_isCarouselDuplicate(dedupedSelected, item)) {
+          continue;
+        }
+        dedupedSelected.add(item);
+      }
+    }
+
+    await _applyCarouselBanners(dedupedSelected);
 
     final seed = _dailySeed();
-    deduped.shuffle(Random(seed));
-    final result = deduped.take(20).toList();
+    dedupedSelected.shuffle(Random(seed));
+    final result = dedupedSelected.take(20).toList();
     _carouselCache = result;
     _carouselCacheDay = now;
     return result;
@@ -213,11 +224,33 @@ class _HomePageState extends State<HomePage> {
       if (id > 0) {
         seenIds.add(id);
       }
-      seenTitles[titleKey] = result.length;
+      if (titleKey.isNotEmpty) {
+        seenTitles[titleKey] = result.length;
+      }
       result.add(item);
     }
 
     return result;
+  }
+
+  bool _isCarouselDuplicate(List<AnimeClass> items, AnimeClass candidate) {
+    if (candidate.id > 0) {
+      for (final item in items) {
+        if (item.id == candidate.id) {
+          return true;
+        }
+      }
+    }
+    final titleKey = candidate.title.trim().toLowerCase();
+    if (titleKey.isEmpty) {
+      return false;
+    }
+    for (final item in items) {
+      if (item.title.trim().toLowerCase() == titleKey) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<List> _fetchTopRated() async {
