@@ -86,68 +86,67 @@ class _HomePageState extends State<HomePage> {
     return now.year * 1000 + dayOfYear;
   }
 
-  final rows = [
-    HomeHeroCarousel(
-      loader: _loadCarouselItems,
-    ),
-    AnimeRow(
-      key: UniqueKey(),
-      function: toContinueAnime,
-      name: "Riprendi a guardare",
-      type: 3,
-      actionLabel: "Vedi tutti",
-      onAction: () => Get.to(
-        () => HomeSectionPage(
-          args: HomeSectionArgs(
-            title: "Riprendi a guardare",
-            loader: toContinueAnime,
-            converter: (value) => modelToObj(value as AnimeModel),
-          ),
-        ),
-      ),
-    ),
-    AnimeRow(
-      function: latestAnime,
-      name: "Ultimi episodi",
-      type: 0,
-      actionLabel: "Vedi tutti",
-      onAction: () => Get.to(
-        () => LatestSectionPage(
-          title: "Ultimi episodi",
-        ),
-      ),
-    ),
-    AnimeRow(
-      function: popularAnime,
-      name: "Anime popolari",
-      type: 1,
-      actionLabel: "Vedi tutti",
-      onAction: () => Get.to(
-        () => ExploreSectionPage(
-          args: ExploreSectionArgs(
-            title: "Anime popolari",
-            kind: ExploreSectionKind.topAnime,
-            converter: popularToObj,
-            popular: true,
-          ),
-        ),
-      ),
-    ),
-    AnimeRow(
-      function: searchAnime,
-      name: "Tutti gli anime",
-      type: 2,
-      actionLabel: "Vedi tutti",
-      onAction: () => Get.toNamed(RouteGenerator.archivePage),
-    ),
-  ];
-
   refresh() async {
     Get.offAllNamed(RouteGenerator.mainPage);
   }
 
   @override
   Widget build(BuildContext context) {
+    final rows = [
+      HomeHeroCarousel(
+        loader: _loadCarouselItems,
+      ),
+      AnimeRow(
+        key: UniqueKey(),
+        function: toContinueAnime,
+        name: "Riprendi a guardare",
+        type: 3,
+        actionLabel: "Vedi tutti",
+        onAction: () => Get.to(
+          () => HomeSectionPage(
+            args: HomeSectionArgs(
+              title: "Riprendi a guardare",
+              loader: toContinueAnime,
+              converter: (value) => modelToObj(value as AnimeModel),
+            ),
+          ),
+        ),
+      ),
+      AnimeRow(
+        function: latestAnime,
+        name: "Ultimi episodi",
+        type: 0,
+        actionLabel: "Vedi tutti",
+        onAction: () => Get.to(
+          () => LatestSectionPage(
+            title: "Ultimi episodi",
+          ),
+        ),
+      ),
+      AnimeRow(
+        function: popularAnime,
+        name: "Anime popolari",
+        type: 1,
+        actionLabel: "Vedi tutti",
+        onAction: () => Get.to(
+          () => ExploreSectionPage(
+            args: ExploreSectionArgs(
+              title: "Anime popolari",
+              kind: ExploreSectionKind.topAnime,
+              converter: popularToObj,
+              popular: true,
+            ),
+          ),
+        ),
+      ),
+      AnimeRow(
+        function: searchAnime,
+        name: "Tutti gli anime",
+        type: 2,
+        actionLabel: "Vedi tutti",
+        onAction: () => Get.toNamed(RouteGenerator.archivePage),
+      ),
+    ];
     return SafeArea(
       child: Scaffold(
         body: Padding(
