@@ -26,14 +26,46 @@ class _HomePageState extends State<HomePage> {
 
   final GlobalKey<State<StatefulWidget>> continueKey = GlobalKey();
 
-  Future<List<AnimeClass>> _loadCarouselItems() async {
-    final popularRaw = await popularAnime();
-    final latestRaw = await latestAnime();
-    final topRaw = await fetchTopAnime(order: 'rating');
+  static List<AnimeClass>? _carouselCache;
+  static DateTime? _carouselCacheDay;
 
-    final popularItems = popularRaw.map(popularToObj).toList();
-    final latestItems = latestRaw.map(latestToObj).toList();
-    final topItems = topRaw.map(popularToObj).toList();
+  Future<List<AnimeClass>> _loadCarouselItems() async {
+    final now = DateTime.now();
+    if (_carouselCache != null &&
+        _carouselCache!.isNotEmpty &&
+        _carouselCacheDay != null &&
+        _isSameDay(_carouselCacheDay!, now)) {
+      return _carouselCache!;
+    }
+
+    List popularItems = [];
+    List latestItems = [];
+    List topItems = [];
+
+    try {
+      final popularRaw = await popularAnime();
+      popularItems = popularRaw.map(popularToObj).toList();
+    } catch (e) {
+      debugPrint("Carousel: errore popularAnime: $e");
+    }
+
+    try {
+      final latestRaw = await latestAnime();
+      latestItems = latestRaw.map(latestToObj).toList();
+    } catch (e) {
+      debugPrint("Carousel: errore latestAnime: $e");
+    }
+
+    try {
+      final topRaw = await fetchTopAnime(order: 'rating');
+      topItems = topRaw.map(popularToObj).toList();
+    } catch (e) {
+      debugPrint("Carousel: errore fetchTopAnime: $e");
+    }
+
+    if (popularItems.isEmpty && latestItems.isEmpty && topItems.isEmpty) {
+      throw Exception("Carousel: nessuna sorgente disponibile");
+    }
 
     final selected = <AnimeClass>[];
     final usedIds = <int>{};
@@ -77,13 +109,22 @@ class _HomePageState extends State<HomePage> {
 
     final seed = _dailySeed();
     selected.shuffle(Random(seed));
-    return selected.take(20).toList();
+    final result = selected.take(20).toList();
+    _carouselCache = result;
+    _carouselCacheDay = now;
+    return result;
   }
 
   int _dailySeed() {
     final now = DateTime.now();
     final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays + 1;
     return now.year * 1000 + dayOfYear;
+  }
+
+  bool _isSameDay(DateTime left, DateTime right) {
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
   }
 
   refresh() async {
