@@ -187,13 +187,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _applyCarouselBanners(List<AnimeClass> items) async {
-    final now = DateTime.now();
-    final cachedWeekKey = internalAPI.getBannerCacheWeekKey();
-    final weekKey = _weekKey(now);
     final cache = internalAPI.getBannerCache();
-    if (cachedWeekKey.isEmpty || cachedWeekKey != weekKey) {
-      cache.clear();
-    }
     final updatedCache = Map<String, String>.from(cache);
 
     const batchSize = 8;
@@ -230,10 +224,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    await internalAPI.setBannerCache(
-      cache: updatedCache,
-      weekKey: weekKey,
-    );
+    await internalAPI.setBannerCache(cache: updatedCache);
   }
 
   List<AnimeClass> _dedupeCarouselItems(List<AnimeClass> items) {

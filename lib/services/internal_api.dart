@@ -87,7 +87,6 @@ class InternalAPI {
   }
 
   static const String _bannerCacheKey = 'bannerCache';
-  static const String _bannerCacheWeekKey = 'bannerCacheWeek';
   static const String _homeCarouselCacheKey = 'homeCarouselCache';
   static const String _homeCarouselCacheWeekKey = 'homeCarouselCacheWeek';
 
@@ -110,16 +109,10 @@ class InternalAPI {
     return {};
   }
 
-  String getBannerCacheWeekKey() {
-    return prefs.getString(_bannerCacheWeekKey) ?? '';
-  }
-
   Future<void> setBannerCache({
     required Map<String, String> cache,
-    required String weekKey,
   }) async {
     await prefs.setString(_bannerCacheKey, jsonEncode(cache));
-    await prefs.setString(_bannerCacheWeekKey, weekKey);
   }
 
   List<Map<String, dynamic>> getHomeCarouselCache() {
