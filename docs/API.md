@@ -47,6 +47,11 @@ api.dart ottiene i cookie dalla home e costruisce gli header:
   Segue Location o body per ottenere l'embed URL
   Parse di window.downloadUrl o URL mp4/m3u8 dall'HTML
 
+- Banner per carosello Home:
+  GET https://www.animeunity.so/anime/{animeId}-{slug}
+  Parse dell'attributo `anime` dentro il tag `video-player`
+  Campo usato: `imageurl_cover` (puo' essere vuoto se il banner non e' disponibile)
+
 ## Normalizzazione URL immagini
 Alcune cover usano locandine animeworld.so.
 anime_obj.dart le mappa al CDN AnimeUnity:

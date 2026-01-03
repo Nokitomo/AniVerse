@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:archive/archive_io.dart';
 import 'package:aniverse/services/internal_db.dart';
@@ -83,6 +84,65 @@ class InternalAPI {
 
   String getKeyValue(String key) {
     return prefs.getString(key) ?? '';
+  }
+
+  static const String _bannerCacheKey = 'bannerCache';
+  static const String _homeCarouselCacheKey = 'homeCarouselCache';
+  static const String _homeCarouselCacheWeekKey = 'homeCarouselCacheWeek';
+
+  Map<String, String> getBannerCache() {
+    final raw = prefs.getString(_bannerCacheKey);
+    if (raw == null || raw.isEmpty) {
+      return {};
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return decoded.map((key, value) => MapEntry(
+              key.toString(),
+              value?.toString() ?? '',
+            ));
+      }
+    } catch (_) {
+      return {};
+    }
+    return {};
+  }
+
+  Future<void> setBannerCache({
+    required Map<String, String> cache,
+  }) async {
+    await prefs.setString(_bannerCacheKey, jsonEncode(cache));
+  }
+
+  List<Map<String, dynamic>> getHomeCarouselCache() {
+    final raw = prefs.getString(_homeCarouselCacheKey);
+    if (raw == null || raw.isEmpty) {
+      return [];
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        return decoded.whereType<Map>().map((item) {
+          return item.cast<String, dynamic>();
+        }).toList();
+      }
+    } catch (_) {
+      return [];
+    }
+    return [];
+  }
+
+  String getHomeCarouselCacheWeekKey() {
+    return prefs.getString(_homeCarouselCacheWeekKey) ?? '';
+  }
+
+  Future<void> setHomeCarouselCache({
+    required List<Map<String, dynamic>> items,
+    required String weekKey,
+  }) async {
+    await prefs.setString(_homeCarouselCacheKey, jsonEncode(items));
+    await prefs.setString(_homeCarouselCacheWeekKey, weekKey);
   }
 
   Future<int> exportDb() async {

@@ -17,6 +17,7 @@ class AnimeClass {
   int? year;
   String episodeLabel;
   String progressLabel;
+  String bannerUrl;
 
   DateTime? lastSeen;
 
@@ -36,6 +37,7 @@ class AnimeClass {
     this.lastSeen,
     this.episodeLabel = '',
     this.progressLabel = '',
+    this.bannerUrl = '',
   });
 
   AnimeModel getModel() {
@@ -50,6 +52,31 @@ class AnimeClass {
   }
 
   get toModel => getModel();
+
+  Map<String, dynamic> toCarouselJson() {
+    return {
+      'id': id,
+      'title': title,
+      'imageUrl': imageUrl,
+      'slug': slug,
+      'bannerUrl': bannerUrl,
+    };
+  }
+
+  static AnimeClass fromCarouselJson(Map<String, dynamic> json) {
+    return AnimeClass(
+      title: json['title']?.toString() ?? '',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}') ?? 0,
+      description: '',
+      episodes: const [],
+      status: '',
+      genres: const [],
+      episodesCount: 0,
+      slug: json['slug']?.toString() ?? '',
+      bannerUrl: json['bannerUrl']?.toString() ?? '',
+    );
+  }
 }
 
 String normalizeImageUrl(String? url) {
@@ -79,6 +106,29 @@ String normalizeImageUrl(String? url) {
   }
 
   return url;
+}
+
+String bannerFallbackUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return '';
+  }
+
+  Uri? uri;
+  try {
+    uri = Uri.parse(url);
+  } catch (_) {
+    return url;
+  }
+
+  final host = uri.host.toLowerCase();
+  if (host.contains('anilist.co') && uri.path.contains('/banner/')) {
+    final filename = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
+    if (filename.isNotEmpty) {
+      return 'https://img.animeunity.so/anime/$filename';
+    }
+  }
+
+  return '';
 }
 
 AnimeClass searchToObj(dynamic json) {

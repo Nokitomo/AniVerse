@@ -131,6 +131,79 @@ Future<List<Element>> getElements(
   }
 }
 
+Future<String?> fetchAnimeBannerUrl({
+  required int animeId,
+  required String slug,
+}) async {
+  if (animeId <= 0 || slug.trim().isEmpty) {
+    return null;
+  }
+  final url = "$_baseHost/anime/$animeId-$slug";
+
+  for (var attempt = 0; attempt < 2; attempt++) {
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: _defaultHeaders,
+      );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        continue;
+      }
+      final body = response.body;
+      if (body.trim().isEmpty) {
+        continue;
+      }
+
+      final document = parse(body);
+      final candidates = document.getElementsByTagName('video-player');
+      final element = candidates.firstWhere(
+        (el) => el.attributes.containsKey('anime'),
+        orElse: () => candidates.isNotEmpty ? candidates.first : Element.tag('video-player'),
+      );
+      final raw = element.attributes['anime'];
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = _decodeHtmlAttribute(raw);
+        final data = jsonDecode(decoded);
+        if (data is Map && data['imageurl_cover'] is String) {
+          final value = (data['imageurl_cover'] as String).trim();
+          return value.isEmpty ? '' : value;
+        }
+      }
+
+      final direct = RegExp(
+        r'imageurl_cover\\\":\\\"([^\\\"]+)',
+      ).firstMatch(body);
+      if (direct != null) {
+        final value = direct.group(1)?.trim() ?? '';
+        if (value.isEmpty) {
+          return '';
+        }
+        final normalized = value.replaceAll('\\/', '/');
+        if (normalized.startsWith('http')) {
+          return normalized;
+        }
+        try {
+          final decoded = jsonDecode('"$value"');
+          final decodedValue = decoded.toString().trim();
+          return decodedValue.isEmpty ? '' : decodedValue;
+        } catch (_) {
+          return null;
+        }
+      }
+      final escaped = RegExp(
+        r'imageurl_cover&quot;:&quot;([^&]+)&quot;',
+      ).firstMatch(body);
+      if (escaped != null) {
+        final value = escaped.group(1)?.trim() ?? '';
+        return value.isEmpty ? '' : value;
+      }
+    } catch (_) {
+      // retry once
+    }
+  }
+  return null;
+}
+
 Future<Map<String, dynamic>> fetchArchivioMeta() async {
   final document = await makeRequestAndGetDocument(
     "$_baseHost/archivio?hidebar=true",
