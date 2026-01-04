@@ -50,7 +50,7 @@ class InternalAPI {
   }
 
   bool getDarkThemeStatus() {
-    return prefs.getBool('darkTheme') ?? ThemeMode.system == ThemeMode.dark;
+    return prefs.getBool('darkTheme') ?? true;
   }
 
   bool getDynamicThemeStatus() {
