@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
 import 'package:aniverse/services/internal_api.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -39,9 +40,16 @@ String _decodeHtmlAttribute(String value) {
       .replaceAll('&gt;', '>');
 }
 
+String _safeSnippet(String value, int max) {
+  if (value.length <= max) {
+    return value;
+  }
+  return value.substring(0, max);
+}
+
 Map<String, dynamic> _extractDataPage(String html) {
   final match = RegExp(
-    r'id="app"[^>]*data-page="([^"]+)"',
+    r'id=["\']app["\'][^>]*data-page=["\']([^"\']+)',
     caseSensitive: false,
   ).firstMatch(html);
   if (match == null) {
@@ -134,10 +142,18 @@ Future<ScHomePayload> fetchStreamingCommunityHome() async {
   final baseUrl = await getStreamingCommunityBaseUrl();
   final response = await http.get(Uri.parse('$baseUrl/'), headers: _defaultHeaders);
   if (response.statusCode < 200 || response.statusCode >= 300) {
+    debugPrint('SC home HTTP ${response.statusCode} from $baseUrl');
     throw Exception('HTTP ${response.statusCode} for home');
   }
 
-  final data = _extractDataPage(response.body);
+  Map<String, dynamic> data;
+  try {
+    data = _extractDataPage(response.body);
+  } catch (error) {
+    debugPrint('SC home parse error from $baseUrl: $error');
+    debugPrint(_safeSnippet(response.body, 400));
+    rethrow;
+  }
   final props = data['props'] is Map ? (data['props'] as Map).cast<String, dynamic>() : <String, dynamic>{};
   final slidersRaw = props['sliders'];
   final slideBannersRaw = props['slideBanners'];
