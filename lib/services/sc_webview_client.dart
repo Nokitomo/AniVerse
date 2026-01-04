@@ -7,9 +7,34 @@ import 'package:webview_flutter/webview_flutter.dart';
 class ScWebViewClient {
   WebViewController? _controller;
   Future<void> _queue = Future.value();
+  Completer<void>? _pageLoadCompleter;
+  String? _pendingUrl;
 
   void attachController(WebViewController controller) {
     _controller = controller;
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageFinished: (url) {
+          final completer = _pageLoadCompleter;
+          if (completer != null && !completer.isCompleted) {
+            completer.complete();
+          }
+        },
+        onWebResourceError: (error) {
+          final completer = _pageLoadCompleter;
+          final isMainFrame = error.isForMainFrame;
+          if (isMainFrame) {
+            debugPrint(
+              'SC WebView error mainFrame url=${error.url} '
+              'code=${error.errorCode} desc=${error.description}',
+            );
+          }
+          if (isMainFrame && completer != null && !completer.isCompleted) {
+            completer.completeError(error);
+          }
+        },
+      ),
+    );
   }
 
   Future<String> fetchDataPageAttribute(String url) {
@@ -19,37 +44,19 @@ class ScWebViewClient {
         throw Exception('StreamingCommunity WebView non pronta');
       }
 
-      final completer = Completer<void>();
-      controller.setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) {
-            if (!completer.isCompleted) {
-              completer.complete();
-            }
-          },
-          onWebResourceError: (error) {
-            if (!completer.isCompleted) {
-              completer.completeError(error);
-            }
-          },
-        ),
-      );
-
+      _pendingUrl = url;
+      _pageLoadCompleter = Completer<void>();
       await controller.loadRequest(Uri.parse(url));
-      await completer.future.timeout(
+      await _pageLoadCompleter!.future.timeout(
         const Duration(seconds: 20),
         onTimeout: () => throw Exception('Timeout WebView per $url'),
       );
 
-      final result = await controller.runJavaScriptReturningResult(
-        "document.querySelector('#app')?.getAttribute('data-page')",
-      );
-
-      final normalized = _normalizeJsResult(result);
-      if (normalized.trim().isEmpty) {
+      final dataPage = await _readDataPageWithRetry(controller);
+      if (dataPage.trim().isEmpty) {
         throw Exception('data-page vuoto per $url');
       }
-      return normalized;
+      return dataPage;
     });
   }
 
@@ -65,6 +72,9 @@ class ScWebViewClient {
     }
     if (value is String) {
       final trimmed = value.trim();
+      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'undefined') {
+        return '';
+      }
       if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
           trimmed.contains(r'\u')) {
         try {
@@ -76,5 +86,21 @@ class ScWebViewClient {
       return trimmed;
     }
     return value.toString();
+  }
+
+  Future<String> _readDataPageWithRetry(WebViewController controller) async {
+    const attempts = 8;
+    const delay = Duration(milliseconds: 400);
+    for (var i = 0; i < attempts; i++) {
+      final result = await controller.runJavaScriptReturningResult(
+        "document.querySelector('#app')?.getAttribute('data-page') || ''",
+      );
+      final normalized = _normalizeJsResult(result);
+      if (normalized.trim().isNotEmpty) {
+        return normalized;
+      }
+      await Future.delayed(delay);
+    }
+    return '';
   }
 }
