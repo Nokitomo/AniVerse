@@ -340,7 +340,7 @@ Future<String> fetchStreamingCommunityIframeSrc({
 
 String? _extractM3u8Url(String html) {
   final match = RegExp(
-    r"(https?://[^\s'\"<>]+m3u8[^\s'\"<>]*)",
+    "(https?://[^\\s'\"<>]+m3u8[^\\s'\"<>]*)",
     caseSensitive: false,
   ).firstMatch(html);
   return match?.group(1);
@@ -349,15 +349,15 @@ String? _extractM3u8Url(String html) {
 Map<String, String> _extractMasterPlaylistMeta(String html) {
   final meta = <String, String>{};
   final urlMatch = RegExp(
-    r"url\s*:\s*['\"]([^'\"]+)",
+    "url\\s*:\\s*['\\\"]([^'\\\"]+)",
     caseSensitive: false,
   ).firstMatch(html);
   final tokenMatch = RegExp(
-    r"token\s*:\s*['\"]([^'\"]+)",
+    "token\\s*:\\s*['\\\"]([^'\\\"]+)",
     caseSensitive: false,
   ).firstMatch(html);
   final expiresMatch = RegExp(
-    r"expires\s*:\s*['\"]?(\d+)",
+    "expires\\s*:\\s*['\\\"]?(\\d+)",
     caseSensitive: false,
   ).firstMatch(html);
   if (urlMatch != null) {
@@ -373,7 +373,10 @@ Map<String, String> _extractMasterPlaylistMeta(String html) {
 }
 
 bool _extractCanPlayFhd(String html) {
-  final match = RegExp(r'canPlayFHD\\s*=\\s*(true|false|1|0)', caseSensitive: false).firstMatch(html);
+  final match = RegExp(
+    'canPlayFHD\\s*=\\s*(true|false|1|0)',
+    caseSensitive: false,
+  ).firstMatch(html);
   if (match == null) {
     return false;
   }

@@ -23,9 +23,6 @@ class _ArchiveListItemState extends State<ArchiveListItem> {
 
   List<String> _genreNames() {
     final genres = widget.anime.genres;
-    if (genres is! List) {
-      return [];
-    }
     return genres
         .whereType<Map>()
         .map((e) => (e['name'] ?? '').toString())

@@ -36,7 +36,6 @@ class _ArchivePageState extends State<ArchivePage> {
   bool _dubbed = false;
   bool _showScrollToTop = false;
   bool _showHeader = true;
-  double _lastScrollOffset = 0;
 
   int? _year;
   String? _order;
@@ -100,7 +99,6 @@ class _ArchivePageState extends State<ArchivePage> {
         _showHeader = shouldShowHeader;
       });
     }
-    _lastScrollOffset = offset;
     final shouldShow = _scrollController.hasClients &&
         _scrollController.position.pixels > 450;
     if (shouldShow != _showScrollToTop) {
