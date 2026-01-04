@@ -49,7 +49,7 @@ String _safeSnippet(String value, int max) {
 
 Map<String, dynamic> _extractDataPage(String html) {
   final match = RegExp(
-    r'id=["\']app["\'][^>]*data-page=["\']([^"\']+)',
+    r"id=['\"]app['\"][^>]*data-page=['\"]([^'\"]+)",
     caseSensitive: false,
   ).firstMatch(html);
   if (match == null) {
