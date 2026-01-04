@@ -1,7 +1,9 @@
 import 'package:aniverse/helper/streamingcommunity_api.dart';
 import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
+import 'package:aniverse/ui/pages/sc_title_detail_page.dart';
 import 'package:aniverse/ui/widgets/sc_media_row.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ScExplorePage extends StatefulWidget {
   const ScExplorePage({super.key});
@@ -47,6 +49,9 @@ class _ScExplorePageState extends State<ScExplorePage> {
                 title: 'Trending',
                 cdnUrl: cdnUrl,
                 itemLimit: 30,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
               ScMediaRow(
                 loader: () async {
@@ -56,6 +61,9 @@ class _ScExplorePageState extends State<ScExplorePage> {
                 title: 'Nuovi arrivi',
                 cdnUrl: cdnUrl,
                 itemLimit: 30,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
               ScMediaRow(
                 loader: () async {
@@ -65,6 +73,9 @@ class _ScExplorePageState extends State<ScExplorePage> {
                 title: 'Top 10',
                 cdnUrl: cdnUrl,
                 itemLimit: 10,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
               ScMediaRow(
                 loader: () async {
@@ -73,6 +84,9 @@ class _ScExplorePageState extends State<ScExplorePage> {
                 title: 'Archivio',
                 cdnUrl: cdnUrl,
                 itemLimit: 30,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
             ];
             return Padding(

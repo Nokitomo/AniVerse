@@ -1,8 +1,10 @@
 import 'package:aniverse/helper/streamingcommunity_api.dart';
 import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
+import 'package:aniverse/ui/pages/sc_title_detail_page.dart';
 import 'package:aniverse/ui/widgets/sc_media_row.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ScHomePage extends StatefulWidget {
   const ScHomePage({super.key});
@@ -89,6 +91,9 @@ class _ScHomePageState extends State<ScHomePage> {
                 },
                 title: 'Trending',
                 cdnUrl: cdnUrl,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
               ScMediaRow(
                 loader: () async {
@@ -97,6 +102,9 @@ class _ScHomePageState extends State<ScHomePage> {
                 },
                 title: 'Aggiunti di recente',
                 cdnUrl: cdnUrl,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
               ScMediaRow(
                 loader: () async {
@@ -106,6 +114,9 @@ class _ScHomePageState extends State<ScHomePage> {
                 title: 'Top 10',
                 cdnUrl: cdnUrl,
                 itemLimit: 10,
+                onItemTap: (media) => Get.to(
+                  () => ScTitleDetailPage(media: media),
+                ),
               ),
             ];
 

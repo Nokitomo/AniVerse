@@ -10,7 +10,7 @@ class ScMediaRow extends StatefulWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final int? itemLimit;
-  final VoidCallback? onItemTap;
+  final void Function(ScMedia media)? onItemTap;
 
   const ScMediaRow({
     super.key,
@@ -96,7 +96,9 @@ class _ScMediaRowState extends State<ScMediaRow> {
                       return ScMediaCard(
                         media: item,
                         cdnUrl: widget.cdnUrl,
-                        onTap: widget.onItemTap,
+                        onTap: widget.onItemTap != null
+                            ? () => widget.onItemTap!(item)
+                            : null,
                       );
                     },
                   ),

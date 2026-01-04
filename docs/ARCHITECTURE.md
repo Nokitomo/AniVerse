@@ -14,6 +14,7 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 - lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
 - lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
 - lib/ui/pages/sc_home_page.dart + sc_explore_page.dart: schermate base Film/Serie (StreamingCommunity).
+- lib/ui/pages/sc_archive_page.dart + sc_title_detail_page.dart + sc_player_page.dart: archivio, dettaglio e player Film/Serie.
 - lib/ui/widgets: componenti UI e widget del player.
 - third_party/flutter_meedu_videoplayer: player integrato con supporto PiP.
 
@@ -30,6 +31,7 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 
 ## Video player
 - PlayerPage usa MeeduPlayerController (lib/ui/widgets/player.dart).
+- ScPlayerPage usa MeeduPlayerController per StreamingCommunity (lib/ui/pages/sc_player_page.dart).
 - PiP e abilitato e il pulsante e visibile. Auto PiP in background e disabilitato nel codice.
 - Fullscreen forzato al caricamento.
 

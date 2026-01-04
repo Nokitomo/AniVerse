@@ -23,11 +23,12 @@
 - Hover states su card desktop
 - Shortcut desktop: Backspace/Esc per indietro, Ctrl+F per ricerca, Spazio per play/pausa nel player
 - Aggiornamenti desktop automatici (Windows MSIX)
+- Selettore sezione (drawer): Anime e Film/Serie TV con reset alla Home
+- Sezione Film/Serie TV: Home, Esplora, Archivio, Dettaglio titolo, Player StreamingCommunity
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.
-- Integrazione StreamingCommunity (modelli e API): disponibile a livello helper, UI non ancora collegata.
-- Sezione Film/Serie (StreamingCommunity): Home/Esplora base disponibili, routing non collegato.
+- Integrazione StreamingCommunity: endpoint stream Vixcloud soggetto a restrizioni anti-bot.
 
 ## Non implementate
 - UI Chromecast / AirPlay (flutter_video_cast e incluso ma non usato nella UI)

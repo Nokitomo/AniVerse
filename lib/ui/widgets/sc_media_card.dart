@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
+import 'package:aniverse/helper/classes/streamingcommunity_utils.dart';
 
 class ScMediaCard extends StatefulWidget {
   final ScMedia media;
@@ -23,30 +24,10 @@ class _ScMediaCardState extends State<ScMediaCard> {
   bool _hovered = false;
 
   String _buildImageUrl() {
-    if (widget.media.images.isEmpty) {
-      return '';
-    }
-    final preferred = ['poster', 'cover', 'cover_mobile', 'background', 'logo'];
-    ScImage? selected;
-    for (final type in preferred) {
-      selected = widget.media.images.firstWhere(
-        (img) => img.type == type && img.filename.isNotEmpty,
-        orElse: () => const ScImage(filename: '', type: ''),
-      );
-      if (selected.filename.isNotEmpty) {
-        break;
-      }
-    }
-    selected ??= widget.media.images.first;
-    final filename = selected.filename;
-    if (filename.startsWith('http')) {
-      return filename;
-    }
-    final base = widget.cdnUrl.trim().isEmpty ? '' : widget.cdnUrl.trim();
-    if (base.isEmpty) {
-      return filename;
-    }
-    return '$base/images/$filename';
+    return buildScImageUrl(
+      images: widget.media.images,
+      cdnUrl: widget.cdnUrl,
+    );
   }
 
   String _typeLabel() {
