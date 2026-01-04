@@ -76,6 +76,7 @@ Gli endpoint sono basati su dominio dinamico (via `domains.json`), con fallback 
 - Home payload (Inertia):
   GET {base}/
   Parse di `data-page` per `version`, `sliders`, `slideBanners`, `genres`, `cdn_url`, `scws_url`.
+  Se il server risponde 403, viene usata una WebView nascosta per leggere `data-page`.
 
 - Slider Home (API):
   GET {base}/api/browse/{slider_name}
@@ -96,10 +97,12 @@ Gli endpoint sono basati su dominio dinamico (via `domains.json`), con fallback 
 - Dettaglio titolo (Inertia):
   GET {base}/it/titles/{id}-{slug}
   Parse di `title`, `seasons`, `loadedSeason` (episodi stagione attiva).
+  Fallback WebView se risposta 403.
 
 - Episodi stagione (Inertia):
   GET {base}/it/titles/{id}-{slug}/season-{num}
   Header richiesti: `X-Inertia: true`, `X-Inertia-Version`.
+  Fallback WebView se risposta 403.
 
 - Iframe stream:
   GET {base}/it/iframe/{title_id}?episode_id=...&next_episode=1

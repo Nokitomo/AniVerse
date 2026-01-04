@@ -9,6 +9,7 @@ import 'package:aniverse/ui/pages/sc_explore_page.dart';
 import 'package:aniverse/ui/pages/sc_home_page.dart';
 import 'package:aniverse/ui/pages/home_page.dart';
 import 'package:aniverse/ui/pages/archive_page.dart';
+import 'package:aniverse/ui/widgets/sc_webview_host.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -49,9 +50,14 @@ class _MainPageState extends State<MainPage> {
         title: Text(section == _AppSection.media ? "Film / Serie TV" : "Anime"),
       ),
       drawer: _buildDrawer(context),
-      body: IndexedStack(
-        index: index,
-        children: tabs,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: index,
+            children: tabs,
+          ),
+          const ScWebViewHost(),
+        ],
       ),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(

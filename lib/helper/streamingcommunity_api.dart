@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
 import 'package:aniverse/services/internal_api.dart';
+import 'package:aniverse/services/sc_webview_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -46,6 +47,16 @@ String _safeSnippet(String value, int max) {
     return value;
   }
   return value.substring(0, max);
+}
+
+class _ScHttpException implements Exception {
+  final int statusCode;
+  final String url;
+
+  _ScHttpException(this.statusCode, this.url);
+
+  @override
+  String toString() => 'HTTP $statusCode for $url';
 }
 
 Map<String, dynamic>? _readStreamingCommunityEntry(String? raw) {
@@ -109,12 +120,23 @@ Map<String, dynamic> _extractDataPage(String html) {
   if (raw.isEmpty) {
     throw Exception('Empty data-page payload');
   }
+  return _decodeDataPagePayload(raw);
+}
+
+Map<String, dynamic> _decodeDataPagePayload(String raw) {
   final decoded = _decodeHtmlAttribute(raw);
   final data = jsonDecode(decoded);
   if (data is! Map) {
     throw Exception('Invalid data-page payload');
   }
   return data.cast<String, dynamic>();
+}
+
+ScWebViewClient? _getScWebViewClient() {
+  if (Get.isRegistered<ScWebViewClient>()) {
+    return Get.find<ScWebViewClient>();
+  }
+  return null;
 }
 
 Future<Map<String, dynamic>?> _fetchDomainsOnline() async {
@@ -174,8 +196,37 @@ Future<String> getStreamingCommunityBaseUrl() async {
   return 'https://streamingcommunityz.gold';
 }
 
-Future<http.Response> _fetchHome(String baseUrl) async {
-  return http.get(Uri.parse('$baseUrl/'), headers: _defaultHeaders);
+Future<Map<String, dynamic>> _fetchInertiaDataPage(
+  String url, {
+  Map<String, String>? headers,
+}) async {
+  final response = await http.get(
+    Uri.parse(url),
+    headers: headers ?? _defaultHeaders,
+  );
+  if (response.statusCode == 403) {
+    debugPrint('SC home HTTP 403 from $url');
+    final webViewClient = _getScWebViewClient();
+    if (webViewClient == null) {
+      throw _ScHttpException(403, url);
+    }
+    final raw = await webViewClient.fetchDataPageAttribute(url);
+    return _decodeDataPagePayload(raw);
+  }
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw _ScHttpException(response.statusCode, url);
+  }
+
+  final body = response.body;
+  if (body.trim().startsWith('{')) {
+    final data = jsonDecode(body);
+    if (data is! Map) {
+      throw Exception('Invalid inertia response');
+    }
+    return data.cast<String, dynamic>();
+  }
+
+  return _extractDataPage(body);
 }
 
 Future<ScHomePayload> fetchStreamingCommunityHome() async {
@@ -183,21 +234,9 @@ Future<ScHomePayload> fetchStreamingCommunityHome() async {
   final entry =
       _readStreamingCommunityEntry(internalAPI.getKeyValue('sc_domains_cache'));
   final candidates = _buildBaseUrlCandidates(primary: baseUrl, entry: entry);
-  http.Response? lastResponse;
-
   for (final candidate in candidates) {
-    final response = await _fetchHome(candidate);
-    lastResponse = response;
-    if (response.statusCode == 403) {
-      debugPrint('SC home HTTP 403 from $candidate');
-      continue;
-    }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      debugPrint('SC home HTTP ${response.statusCode} from $candidate');
-      throw Exception('HTTP ${response.statusCode} for home');
-    }
     try {
-      final data = _extractDataPage(response.body);
+      final data = await _fetchInertiaDataPage('$candidate/');
       final props = data['props'] is Map
           ? (data['props'] as Map).cast<String, dynamic>()
           : <String, dynamic>{};
@@ -230,16 +269,19 @@ Future<ScHomePayload> fetchStreamingCommunityHome() async {
         genres: genres,
         raw: data,
       );
+    } on _ScHttpException catch (error) {
+      if (error.statusCode == 403) {
+        continue;
+      }
+      debugPrint('SC home HTTP ${error.statusCode} from $candidate');
+      rethrow;
     } catch (error) {
       debugPrint('SC home parse error from $candidate: $error');
-      debugPrint(_safeSnippet(response.body, 400));
-      rethrow;
+      throw Exception('Parsing fallito per $candidate');
     }
   }
 
-  final status = lastResponse?.statusCode ?? 0;
-  debugPrint('SC home failed, last status=$status, base=$baseUrl');
-  throw Exception('HTTP $status for home');
+  throw Exception('StreamingCommunity home bloccata (403)');
 }
 
 Future<ScHomeSlider> fetchStreamingCommunitySlider(String name) async {
@@ -326,11 +368,7 @@ Future<ScTitleDetail> fetchStreamingCommunityTitleDetail({
 }) async {
   final baseUrl = await getStreamingCommunityBaseUrl();
   final url = '${_withLocale(baseUrl)}/titles/$id-$slug';
-  final response = await http.get(Uri.parse(url), headers: _defaultHeaders);
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw Exception('HTTP ${response.statusCode} for titles/$id-$slug');
-  }
-  final data = _extractDataPage(response.body);
+  final data = await _fetchInertiaDataPage(url);
   final props = data['props'] is Map ? (data['props'] as Map).cast<String, dynamic>() : <String, dynamic>{};
   final titleRaw = props['title'] is Map ? (props['title'] as Map).cast<String, dynamic>() : <String, dynamic>{};
   final seasonsRaw = titleRaw['seasons'] is List ? titleRaw['seasons'] as List : const [];
@@ -369,21 +407,14 @@ Future<ScSeason> fetchStreamingCommunitySeasonEpisodes({
 }) async {
   final baseUrl = await getStreamingCommunityBaseUrl();
   final url = '${_withLocale(baseUrl)}/titles/$titleId-$slug/season-$seasonNumber';
-  final response = await http.get(
-    Uri.parse(url),
+  final data = await _fetchInertiaDataPage(
+    url,
     headers: {
       ..._defaultHeaders,
       'X-Inertia': 'true',
       if (version.isNotEmpty) 'X-Inertia-Version': version,
     },
   );
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw Exception('HTTP ${response.statusCode} for season-$seasonNumber');
-  }
-  final data = jsonDecode(response.body);
-  if (data is! Map) {
-    throw Exception('Invalid season response');
-  }
   final props = data['props'] is Map ? (data['props'] as Map).cast<String, dynamic>() : <String, dynamic>{};
   final loadedRaw = props['loadedSeason'] is Map ? (props['loadedSeason'] as Map).cast<String, dynamic>() : <String, dynamic>{};
   final episodesRaw = loadedRaw['episodes'] is List ? loadedRaw['episodes'] as List : const [];
