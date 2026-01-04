@@ -64,7 +64,7 @@ I chiamanti mostrano una pagina di errore e consentono il ritorno indietro.
 # API (StreamingCommunity) - Integrazione in corso
 
 AniVerse include un helper dedicato per StreamingCommunity in `lib/helper/streamingcommunity_api.dart`.
-Gli endpoint sono basati su dominio dinamico (via `domains.json`), con fallback locale.
+La sezione Film/Serie TV usa una WebView per navigare il sito (non usa gli endpoint API in UI).
 
 ## Dominio dinamico
 - Fonte domini: https://raw.githubusercontent.com/Arrowar/SC_Domains/refs/heads/main/domains.json

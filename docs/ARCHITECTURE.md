@@ -11,12 +11,10 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 - lib/helper/classes/streamingcommunity_models.dart: modelli StreamingCommunity (media, stagioni, episodi).
 - lib/helper/models/media_model.dart: modello ObjectBox per film/serie (progresso visione).
 - lib/services/internal_api.dart: impostazioni app, lettura versione, import/export database.
-- lib/services/sc_webview_client.dart: WebView nascosta per superare 403 su StreamingCommunity e fare fetch JS (HTML/JSON) + lettura `data-page`.
+- lib/services/sc_webview_client.dart: WebView di supporto per StreamingCommunity (fetch JS, sessioni).
 - lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
 - lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
-- lib/ui/pages/sc_home_page.dart + sc_explore_page.dart: schermate base Film/Serie (StreamingCommunity).
-- lib/ui/pages/sc_archive_page.dart + sc_title_detail_page.dart + sc_player_page.dart: archivio, dettaglio e player Film/Serie.
-- lib/ui/pages/sc_unlock_page.dart: WebView visibile per sbloccare StreamingCommunity.
+- lib/ui/pages/sc_webview_page.dart: WebView principale per la sezione Film/Serie TV (StreamingCommunity).
 - lib/ui/widgets: componenti UI e widget del player.
 - lib/ui/widgets/sc_webview_host.dart: host invisibile della WebView per StreamingCommunity.
 - third_party/flutter_meedu_videoplayer: player integrato con supporto PiP.
