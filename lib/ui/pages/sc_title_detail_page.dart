@@ -2,6 +2,7 @@ import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
 import 'package:aniverse/helper/classes/streamingcommunity_utils.dart';
 import 'package:aniverse/helper/streamingcommunity_api.dart';
 import 'package:aniverse/ui/pages/sc_player_page.dart';
+import 'package:aniverse/ui/pages/sc_unlock_page.dart';
 import 'package:aniverse/ui/widgets/sc_episode_tile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -257,12 +258,28 @@ class _ScTitleDetailPageState extends State<ScTitleDetailPage> {
     if (_error || _detail == null) {
       return Scaffold(
         body: Center(
-          child: Text(
-            "Impossibile caricare il titolo",
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 18,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Impossibile caricare il titolo",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ScUnlockPage(),
+                    ),
+                  );
+                },
+                child: const Text('Sblocca StreamingCommunity'),
+              ),
+            ],
           ),
         ),
       );

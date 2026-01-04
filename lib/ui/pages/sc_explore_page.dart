@@ -1,6 +1,7 @@
 import 'package:aniverse/helper/streamingcommunity_api.dart';
 import 'package:aniverse/helper/classes/streamingcommunity_models.dart';
 import 'package:aniverse/ui/pages/sc_title_detail_page.dart';
+import 'package:aniverse/ui/pages/sc_unlock_page.dart';
 import 'package:aniverse/ui/widgets/sc_media_row.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -27,12 +28,22 @@ class _ScExplorePageState extends State<ScExplorePage> {
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(
-                child: Text(
-                  "Impossibile caricare StreamingCommunity",
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 18,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Impossibile caricare StreamingCommunity",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () => Get.to(() => const ScUnlockPage()),
+                      child: const Text('Sblocca StreamingCommunity'),
+                    ),
+                  ],
                 ),
               );
             }

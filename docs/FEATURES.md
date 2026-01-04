@@ -25,6 +25,7 @@
 - Aggiornamenti desktop automatici (Windows MSIX)
 - Selettore sezione (drawer): Anime e Film/Serie TV con reset alla Home
 - Sezione Film/Serie TV: Home, Esplora, Archivio, Dettaglio titolo, Player StreamingCommunity
+- Schermata "Sblocca StreamingCommunity" con WebView visibile per completare il blocco Cloudflare
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.

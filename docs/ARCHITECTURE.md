@@ -16,6 +16,7 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 - lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
 - lib/ui/pages/sc_home_page.dart + sc_explore_page.dart: schermate base Film/Serie (StreamingCommunity).
 - lib/ui/pages/sc_archive_page.dart + sc_title_detail_page.dart + sc_player_page.dart: archivio, dettaglio e player Film/Serie.
+- lib/ui/pages/sc_unlock_page.dart: WebView visibile per sbloccare StreamingCommunity.
 - lib/ui/widgets: componenti UI e widget del player.
 - lib/ui/widgets/sc_webview_host.dart: host invisibile della WebView per StreamingCommunity.
 - third_party/flutter_meedu_videoplayer: player integrato con supporto PiP.

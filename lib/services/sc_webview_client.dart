@@ -5,13 +5,32 @@ import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class ScWebViewClient {
-  WebViewController? _controller;
+  WebViewController? _hiddenController;
+  WebViewController? _visibleController;
   Future<void> _queue = Future.value();
   Completer<void>? _pageLoadCompleter;
   String? _currentOrigin;
 
-  void attachController(WebViewController controller) {
-    _controller = controller;
+  void attachHiddenController(WebViewController controller) {
+    _hiddenController = controller;
+    _attachDelegate(controller);
+  }
+
+  void attachVisibleController(WebViewController controller) {
+    _visibleController = controller;
+    _attachDelegate(controller);
+  }
+
+  void detachVisibleController(WebViewController controller) {
+    if (identical(_visibleController, controller)) {
+      _visibleController = null;
+    }
+  }
+
+  WebViewController? get _controller =>
+      _visibleController ?? _hiddenController;
+
+  void _attachDelegate(WebViewController controller) {
     controller.setNavigationDelegate(
       NavigationDelegate(
         onPageFinished: (url) {

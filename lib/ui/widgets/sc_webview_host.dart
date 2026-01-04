@@ -26,7 +26,7 @@ class _ScWebViewHostState extends State<ScWebViewHost> {
       )
       ..loadHtmlString('<html><body></body></html>');
 
-    Get.find<ScWebViewClient>().attachController(_controller);
+    Get.find<ScWebViewClient>().attachHiddenController(_controller);
   }
 
   @override
