@@ -9,9 +9,11 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 - lib/helper/classes/anime_obj.dart: mapping modelli e normalizzazione URL immagini.
 - lib/helper/streamingcommunity_api.dart: helper StreamingCommunity (endpoint, parsing Inertia, risoluzione stream).
 - lib/helper/classes/streamingcommunity_models.dart: modelli StreamingCommunity (media, stagioni, episodi).
+- lib/helper/models/media_model.dart: modello ObjectBox per film/serie (progresso visione).
 - lib/services/internal_api.dart: impostazioni app, lettura versione, import/export database.
 - lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
 - lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
+- lib/ui/pages/sc_home_page.dart + sc_explore_page.dart: schermate base Film/Serie (StreamingCommunity).
 - lib/ui/widgets: componenti UI e widget del player.
 - third_party/flutter_meedu_videoplayer: player integrato con supporto PiP.
 
