@@ -76,42 +76,49 @@ Gli endpoint sono basati su dominio dinamico (via `domains.json`), con fallback 
 - Home payload (Inertia):
   GET {base}/
   Parse di `data-page` per `version`, `sliders`, `slideBanners`, `genres`, `cdn_url`, `scws_url`.
-  Se il server risponde 403, viene usata una WebView nascosta per leggere `data-page`.
+  Se il server risponde 403, viene usata una WebView nascosta con fetch JS per ottenere l'HTML o il `data-page`.
 
 - Slider Home (API):
   GET {base}/api/browse/{slider_name}
   Slider disponibili (home): `trending`, `latest`, `top10`.
+  Fallback WebView con fetch JS in caso di 403.
 
 - Ricerca (API):
   GET {base}/api/search?q=...&page=...
   Risposta paginata con `data`, `current_page`, `last_page`, `per_page`, `total`.
+  Fallback WebView con fetch JS in caso di 403.
 
 - Archivio (API):
   GET {base}/api/archive?...
   Risposta con `titles` (nessuna paginazione osservata nei test).
+  Fallback WebView con fetch JS in caso di 403.
 
 - Preview titolo (API):
   POST {base}/api/titles/preview/{id}
   Risposta con plot/genres/images e metadata base.
+  Fallback WebView con fetch JS in caso di 403.
 
 - Dettaglio titolo (Inertia):
   GET {base}/it/titles/{id}-{slug}
   Parse di `title`, `seasons`, `loadedSeason` (episodi stagione attiva).
-  Fallback WebView se risposta 403.
+  Fallback WebView con fetch JS se risposta 403.
 
 - Episodi stagione (Inertia):
   GET {base}/it/titles/{id}-{slug}/season-{num}
   Header richiesti: `X-Inertia: true`, `X-Inertia-Version`.
-  Fallback WebView se risposta 403.
+  Fallback WebView con fetch JS se risposta 403.
 
 - Iframe stream:
   GET {base}/it/iframe/{title_id}?episode_id=...&next_episode=1
   Parse di `iframe src` verso `vixcloud`.
+  Fallback WebView con fetch JS in caso di 403.
 
 - Stream URL (Vixcloud):
   GET iframe URL
   Parse `window.masterPlaylist` o URL `m3u8` diretto.
+  Fallback WebView con fetch JS in caso di 403.
 
 - Video info (API):
   GET {base}/api/video/{video_id}
   Metadata su qualita' e track video.
+  Fallback WebView con fetch JS in caso di 403.

@@ -139,6 +139,28 @@ ScWebViewClient? _getScWebViewClient() {
   return null;
 }
 
+Future<String> _fetchBodyWithWebView({
+  required String url,
+  String method = 'GET',
+  Map<String, String>? headers,
+  Object? body,
+}) async {
+  final webViewClient = _getScWebViewClient();
+  if (webViewClient == null) {
+    throw Exception('StreamingCommunity WebView non pronta');
+  }
+  final response = await webViewClient.fetchText(
+    url: url,
+    method: method,
+    headers: headers,
+    body: body,
+  );
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw _ScHttpException(response.statusCode, url);
+  }
+  return response.body;
+}
+
 Future<Map<String, dynamic>?> _fetchDomainsOnline() async {
   final response = await http.get(Uri.parse(_domainsUrl), headers: _defaultHeaders);
   if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -206,14 +228,17 @@ Future<Map<String, dynamic>> _fetchInertiaDataPage(
   );
   if (response.statusCode == 403) {
     debugPrint('SC home HTTP 403 from $url');
-    final webViewClient = _getScWebViewClient();
-    if (webViewClient == null) {
-      throw _ScHttpException(403, url);
-    }
-    final raw = await webViewClient.fetchDataPageAttribute(url);
+    final raw = await _fetchBodyWithWebView(url: url);
     final trimmed = raw.trimLeft();
     if (trimmed.startsWith('<') || trimmed.contains('<html')) {
-      return _extractDataPage(raw);
+      try {
+        return _extractDataPage(raw);
+      } catch (error) {
+        debugPrint(
+          'SC html snippet ${_safeSnippet(raw, 260)}',
+        );
+        rethrow;
+      }
     }
     return _decodeDataPagePayload(raw);
   }
@@ -230,7 +255,12 @@ Future<Map<String, dynamic>> _fetchInertiaDataPage(
     return data.cast<String, dynamic>();
   }
 
-  return _extractDataPage(body);
+  try {
+    return _extractDataPage(body);
+  } catch (error) {
+    debugPrint('SC html snippet ${_safeSnippet(body, 260)}');
+    rethrow;
+  }
 }
 
 Future<ScHomePayload> fetchStreamingCommunityHome() async {
@@ -290,14 +320,20 @@ Future<ScHomePayload> fetchStreamingCommunityHome() async {
 
 Future<ScHomeSlider> fetchStreamingCommunitySlider(String name) async {
   final baseUrl = await getStreamingCommunityBaseUrl();
+  final url = '$baseUrl/api/browse/$name';
   final response = await http.get(
-    Uri.parse('$baseUrl/api/browse/$name'),
+    Uri.parse(url),
     headers: _defaultHeaders,
   );
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(url: url);
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for api/browse/$name');
+  } else {
+    body = response.body;
   }
-  final data = jsonDecode(response.body);
+  final data = jsonDecode(body);
   if (data is! Map) {
     throw Exception('Invalid browse response');
   }
@@ -314,10 +350,15 @@ Future<ScPagedResult<ScMedia>> searchStreamingCommunityTitles({
     if (page > 1) 'page': page.toString(),
   });
   final response = await http.get(uri, headers: _defaultHeaders);
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(url: uri.toString());
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for api/search');
+  } else {
+    body = response.body;
   }
-  final data = jsonDecode(response.body);
+  final data = jsonDecode(body);
   if (data is! Map) {
     throw Exception('Invalid search response');
   }
@@ -336,10 +377,15 @@ Future<List<ScMedia>> fetchStreamingCommunityArchive({Map<String, String>? query
   final baseUrl = await getStreamingCommunityBaseUrl();
   final uri = Uri.parse('$baseUrl/api/archive').replace(queryParameters: query);
   final response = await http.get(uri, headers: _defaultHeaders);
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(url: uri.toString());
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for api/archive');
+  } else {
+    body = response.body;
   }
-  final data = jsonDecode(response.body);
+  final data = jsonDecode(body);
   if (data is! Map) {
     throw Exception('Invalid archive response');
   }
@@ -349,17 +395,28 @@ Future<List<ScMedia>> fetchStreamingCommunityArchive({Map<String, String>? query
 
 Future<ScTitlePreview> fetchStreamingCommunityTitlePreview(int id) async {
   final baseUrl = await getStreamingCommunityBaseUrl();
+  final url = '$baseUrl/api/titles/preview/$id';
+  final headers = {
+    ..._defaultHeaders,
+    'X-Requested-With': 'XMLHttpRequest',
+  };
   final response = await http.post(
-    Uri.parse('$baseUrl/api/titles/preview/$id'),
-    headers: {
-      ..._defaultHeaders,
-      'X-Requested-With': 'XMLHttpRequest',
-    },
+    Uri.parse(url),
+    headers: headers,
   );
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(
+      url: url,
+      method: 'POST',
+      headers: headers,
+    );
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for api/titles/preview/$id');
+  } else {
+    body = response.body;
   }
-  final data = jsonDecode(response.body);
+  final data = jsonDecode(body);
   if (data is! Map) {
     throw Exception('Invalid title preview response');
   }
@@ -439,10 +496,15 @@ Future<String> fetchStreamingCommunityIframeSrc({
     if (episodeId != null) 'next_episode': '1',
   });
   final response = await http.get(uri, headers: _defaultHeaders);
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(url: uri.toString());
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for iframe');
+  } else {
+    body = response.body;
   }
-  final match = RegExp(r'<iframe[^>]+src="([^"]+)"', caseSensitive: false).firstMatch(response.body);
+  final match = RegExp(r'<iframe[^>]+src="([^"]+)"', caseSensitive: false).firstMatch(body);
   if (match == null) {
     throw Exception('Missing iframe src');
   }
@@ -503,22 +565,31 @@ Future<String> resolveStreamingCommunityStreamUrl({
   required String iframeUrl,
   required String referer,
 }) async {
+  final headers = {
+    ..._defaultHeaders,
+    'Referer': referer,
+    'Origin': Uri.parse(referer).origin,
+  };
   final response = await http.get(
     Uri.parse(iframeUrl),
-    headers: {
-      ..._defaultHeaders,
-      'Referer': referer,
-      'Origin': Uri.parse(referer).origin,
-    },
+    headers: headers,
   );
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(
+      url: iframeUrl,
+      headers: headers,
+    );
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for embed');
+  } else {
+    body = response.body;
   }
-  final direct = _extractM3u8Url(response.body);
+  final direct = _extractM3u8Url(body);
   if (direct != null && direct.isNotEmpty) {
     return direct;
   }
-  final meta = _extractMasterPlaylistMeta(response.body);
+  final meta = _extractMasterPlaylistMeta(body);
   final url = meta['url'];
   if (url == null || url.isEmpty) {
     throw Exception('Missing master playlist url');
@@ -531,7 +602,7 @@ Future<String> resolveStreamingCommunityStreamUrl({
   if (meta['expires'] != null && meta['expires']!.isNotEmpty) {
     queryParams['expires'] = meta['expires']!;
   }
-  if (_extractCanPlayFhd(response.body)) {
+  if (_extractCanPlayFhd(body)) {
     queryParams['h'] = '1';
   }
   final normalized = parsed.replace(queryParameters: queryParams);
@@ -540,14 +611,20 @@ Future<String> resolveStreamingCommunityStreamUrl({
 
 Future<Map<String, dynamic>> fetchStreamingCommunityVideoInfo(int videoId) async {
   final baseUrl = await getStreamingCommunityBaseUrl();
+  final url = '$baseUrl/api/video/$videoId';
   final response = await http.get(
-    Uri.parse('$baseUrl/api/video/$videoId'),
+    Uri.parse(url),
     headers: _defaultHeaders,
   );
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  String body;
+  if (response.statusCode == 403) {
+    body = await _fetchBodyWithWebView(url: url);
+  } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for api/video/$videoId');
+  } else {
+    body = response.body;
   }
-  final data = jsonDecode(response.body);
+  final data = jsonDecode(body);
   if (data is! Map) {
     throw Exception('Invalid video info response');
   }

@@ -8,6 +8,7 @@ class ScWebViewClient {
   WebViewController? _controller;
   Future<void> _queue = Future.value();
   Completer<void>? _pageLoadCompleter;
+  String? _currentOrigin;
 
   void attachController(WebViewController controller) {
     _controller = controller;
@@ -43,12 +44,8 @@ class ScWebViewClient {
         throw Exception('StreamingCommunity WebView non pronta');
       }
 
-      _pageLoadCompleter = Completer<void>();
-      await controller.loadRequest(Uri.parse(url));
-      await _pageLoadCompleter!.future.timeout(
-        const Duration(seconds: 20),
-        onTimeout: () => throw Exception('Timeout WebView per $url'),
-      );
+      await _loadUrlAndWait(controller, url);
+      _currentOrigin = Uri.parse(url).origin;
 
       final dataPage = await _readDataPageWithRetry(controller);
       if (dataPage.trim().isNotEmpty) {
@@ -66,10 +63,81 @@ class ScWebViewClient {
     });
   }
 
+  Future<ScWebViewResponse> fetchText({
+    required String url,
+    String method = 'GET',
+    Map<String, String>? headers,
+    Object? body,
+  }) {
+    return _enqueue(() async {
+      final controller = _controller;
+      if (controller == null) {
+        throw Exception('StreamingCommunity WebView non pronta');
+      }
+
+      final origin = Uri.parse(url).origin;
+      if (_currentOrigin != origin) {
+        await _loadUrlAndWait(controller, '$origin/');
+        _currentOrigin = origin;
+      }
+
+      final payload = <String, dynamic>{
+        'method': method,
+        'headers': headers ?? const <String, String>{},
+        if (body != null) 'body': body,
+      };
+      final jsPayload = jsonEncode(payload);
+      final js = '''
+        (async () => {
+          const opts = $jsPayload;
+          const method = opts.method || 'GET';
+          const headers = opts.headers || {};
+          const init = { method, headers, credentials: 'include' };
+          if (opts.body !== undefined && opts.body !== null) {
+            if (typeof opts.body === 'string') {
+              init.body = opts.body;
+            } else {
+              init.body = JSON.stringify(opts.body);
+              if (!headers['Content-Type'] && !headers['content-type']) {
+                headers['Content-Type'] = 'application/json';
+              }
+            }
+          }
+          const resp = await fetch('${_escapeJsString(url)}', init);
+          const text = await resp.text();
+          return JSON.stringify({ status: resp.status, body: text });
+        })();
+      ''';
+      final result = await controller.runJavaScriptReturningResult(js);
+      final normalized = _normalizeJsResult(result);
+      if (normalized.trim().isEmpty) {
+        throw Exception('Risposta WebView vuota per $url');
+      }
+      final decoded = jsonDecode(normalized);
+      if (decoded is! Map) {
+        throw Exception('Risposta WebView non valida per $url');
+      }
+      final status = decoded['status'];
+      return ScWebViewResponse(
+        status is int ? status : int.tryParse('$status') ?? 0,
+        decoded['body']?.toString() ?? '',
+      );
+    });
+  }
+
   Future<T> _enqueue<T>(Future<T> Function() task) {
     final next = _queue.then((_) => task());
     _queue = next.then((_) {}, onError: (_) {});
     return next;
+  }
+
+  Future<void> _loadUrlAndWait(WebViewController controller, String url) async {
+    _pageLoadCompleter = Completer<void>();
+    await controller.loadRequest(Uri.parse(url));
+    await _pageLoadCompleter!.future.timeout(
+      const Duration(seconds: 20),
+      onTimeout: () => throw Exception('Timeout WebView per $url'),
+    );
   }
 
   String _normalizeJsResult(Object? value) {
@@ -94,6 +162,14 @@ class ScWebViewClient {
     return value.toString();
   }
 
+  String _escapeJsString(String value) {
+    return value
+        .replaceAll(r'\', r'\\')
+        .replaceAll("'", r"\'")
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r');
+  }
+
   Future<String> _readDataPageWithRetry(WebViewController controller) async {
     const attempts = 8;
     const delay = Duration(milliseconds: 400);
@@ -109,4 +185,11 @@ class ScWebViewClient {
     }
     return '';
   }
+}
+
+class ScWebViewResponse {
+  final int statusCode;
+  final String body;
+
+  const ScWebViewResponse(this.statusCode, this.body);
 }
