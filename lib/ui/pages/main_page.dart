@@ -38,6 +38,16 @@ class _MainPageState extends State<MainPage> {
     final destinations = _buildDestinations(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        title: Text(section == _AppSection.media ? "Film / Serie TV" : "Anime"),
+      ),
       drawer: _buildDrawer(context),
       body: IndexedStack(
         index: index,
