@@ -26,6 +26,7 @@
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.
+- Integrazione StreamingCommunity (modelli e API): disponibile a livello helper, UI non ancora collegata.
 
 ## Non implementate
 - UI Chromecast / AirPlay (flutter_video_cast e incluso ma non usato nella UI)

@@ -60,3 +60,54 @@ anime_obj.dart le mappa al CDN AnimeUnity:
 ## Comportamento errori
 api.dart lancia eccezioni su risposta vuota o non-2xx.
 I chiamanti mostrano una pagina di errore e consentono il ritorno indietro.
+
+# API (StreamingCommunity) - Integrazione in corso
+
+AniVerse include un helper dedicato per StreamingCommunity in `lib/helper/streamingcommunity_api.dart`.
+Gli endpoint sono basati su dominio dinamico (via `domains.json`), con fallback locale.
+
+## Dominio dinamico
+- Fonte domini: https://raw.githubusercontent.com/Arrowar/SC_Domains/refs/heads/main/domains.json
+- Chiave letta: `streamingcommunity.full_url`
+- Cache locale: 12 ore (SharedPreferences)
+
+## Endpoint usati
+- Home payload (Inertia):
+  GET {base}/
+  Parse di `data-page` per `version`, `sliders`, `slideBanners`, `genres`, `cdn_url`, `scws_url`.
+
+- Slider Home (API):
+  GET {base}/api/browse/{slider_name}
+  Slider disponibili (home): `trending`, `latest`, `top10`.
+
+- Ricerca (API):
+  GET {base}/api/search?q=...&page=...
+  Risposta paginata con `data`, `current_page`, `last_page`, `per_page`, `total`.
+
+- Archivio (API):
+  GET {base}/api/archive?...
+  Risposta con `titles` (nessuna paginazione osservata nei test).
+
+- Preview titolo (API):
+  POST {base}/api/titles/preview/{id}
+  Risposta con plot/genres/images e metadata base.
+
+- Dettaglio titolo (Inertia):
+  GET {base}/it/titles/{id}-{slug}
+  Parse di `title`, `seasons`, `loadedSeason` (episodi stagione attiva).
+
+- Episodi stagione (Inertia):
+  GET {base}/it/titles/{id}-{slug}/season-{num}
+  Header richiesti: `X-Inertia: true`, `X-Inertia-Version`.
+
+- Iframe stream:
+  GET {base}/it/iframe/{title_id}?episode_id=...&next_episode=1
+  Parse di `iframe src` verso `vixcloud`.
+
+- Stream URL (Vixcloud):
+  GET iframe URL
+  Parse `window.masterPlaylist` o URL `m3u8` diretto.
+
+- Video info (API):
+  GET {base}/api/video/{video_id}
+  Metadata su qualita' e track video.
