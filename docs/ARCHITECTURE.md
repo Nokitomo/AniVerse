@@ -11,7 +11,7 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 - lib/helper/streamingcommunity_api.dart: helper StreamingCommunity (non usato nella UI WebView, tenuto per future integrazioni).
 - lib/services/internal_api.dart: impostazioni app, lettura versione, import/export database.
 - lib/services/streaming_domain_service.dart: risoluzione dominio StreamingCommunity e base StreamingUnity per la WebView.
-- lib/services/streamingcommunity_auth_service.dart: gestione credenziali StreamingCommunity (username/password, auto-login, dominio preferito).
+- lib/services/streamingcommunity_auth_service.dart: gestione credenziali StreamingCommunity (username/password, compilazione manuale, dominio preferito).
 - lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
 - lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
 - lib/ui/pages/sc_webview_page.dart: WebView principale per la sezione Film/Serie TV (StreamingCommunity) con whitelist domini.
