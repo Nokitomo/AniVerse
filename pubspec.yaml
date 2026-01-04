@@ -1,9 +1,9 @@
 name: aniverse
-description: Un app per guardare anime
+description: App per anime e sezione film/serie via WebView
 
 publish_to: "none"
 
-version: 1.1.18+1
+version: 1.1.19+1
 
 environment:
   sdk: ">=3.3.1 <4.0.0"

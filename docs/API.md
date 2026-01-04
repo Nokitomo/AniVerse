@@ -65,6 +65,7 @@ I chiamanti mostrano una pagina di errore e consentono il ritorno indietro.
 
 AniVerse usa una WebView per navigare StreamingCommunity (non usa gli endpoint API in UI).
 Il dominio viene risolto in `lib/services/streaming_domain_service.dart` con cache locale.
+Le pagine native StreamingCommunity restano nel progetto per una futura integrazione TMDB/VixSrc.
 
 ## Dominio dinamico
 - Fonte domini: https://raw.githubusercontent.com/Arrowar/SC_Domains/refs/heads/main/domains.json

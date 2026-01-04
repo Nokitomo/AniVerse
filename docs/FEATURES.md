@@ -26,6 +26,7 @@
 - Selettore sezione (drawer): Anime e Film/Serie TV con reset alla Home
 - Sezione Film/Serie TV: navigazione tramite WebView StreamingCommunity con blocco redirect esterni
 - Link AnimeUnity nella WebView rimanda alla sezione Anime dell'app
+- UI native Film/Serie (home/esplora/archivio/dettaglio/player) mantenuta per futura integrazione TMDB/VixSrc
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.

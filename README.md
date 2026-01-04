@@ -1,5 +1,6 @@
 # AniVerse
-Una app semplice in Material Design per guardare anime da [AnimeUnity](https://www.animeunity.so) sul telefono. <br>
+Una app semplice in Material Design per guardare anime da [AnimeUnity](https://www.animeunity.so) sul telefono e
+film/serie tramite WebView StreamingCommunity. <br>
 Funziona su Android e iOS (testato), probabilmente anche su altre piattaforme.
 ## Screenshot
 <div>
@@ -17,12 +18,13 @@ Funziona su Android e iOS (testato), probabilmente anche su altre piattaforme.
 
 ## Funzionalita
 - Modalita PiP (iOS & Android)
-- Tema chiaro / scuro
+- Tema chiaro / scuro (predefinito: scuro)
 - Aggiornamenti OTA (Android)
 - Icona tematizzata (Android)
 - Icone iOS generate senza alpha (requisito App Store)
 - Controlli swipe nel player per volume e luminosita
 - Backup / Ripristino database
+- Sezione Film / Serie TV con navigazione WebView
 - Usa l'app e scopri il resto :D
 
 ## Nota
