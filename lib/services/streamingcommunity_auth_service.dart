@@ -6,6 +6,7 @@ class StreamingCommunityAuthService {
   static const String _usernameKey = 'sc_username';
   static const String _autoLoginKey = 'sc_autologin_enabled';
   static const String _passwordKey = 'sc_password';
+  static const String _preferredHostKey = 'sc_preferred_host';
 
   final InternalAPI _internalApi = Get.find<InternalAPI>();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
@@ -25,6 +26,14 @@ class StreamingCommunityAuthService {
 
   Future<void> setAutoLoginEnabled(bool value) async {
     _internalApi.setKeyValue(_autoLoginKey, value.toString());
+  }
+
+  String getPreferredHost() {
+    return _internalApi.getKeyValue(_preferredHostKey);
+  }
+
+  Future<void> setPreferredHost(String value) async {
+    _internalApi.setKeyValue(_preferredHostKey, value);
   }
 
   Future<String> getPassword() async {
