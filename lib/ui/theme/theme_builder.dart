@@ -21,8 +21,13 @@ bool _isTextEditing() {
   if (context == null) {
     return false;
   }
-  return context.widget is EditableText ||
-      context.findAncestorWidgetOfExactType<EditableText>() != null;
+  final element = context is Element ? context : null;
+  if (element == null || !element.mounted) {
+    return false;
+  }
+  final widget = element.widget;
+  return widget is EditableText ||
+      element.findAncestorWidgetOfExactType<EditableText>() != null;
 }
 
 class DynamicThemeBuilder extends StatelessWidget {
