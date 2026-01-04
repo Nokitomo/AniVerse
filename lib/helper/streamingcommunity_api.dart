@@ -339,15 +339,27 @@ Future<String> fetchStreamingCommunityIframeSrc({
 }
 
 String? _extractM3u8Url(String html) {
-  final match = RegExp(r'(https?://[^\\s\'"]+m3u8[^\\s\'"]*)', caseSensitive: false).firstMatch(html);
+  final match = RegExp(
+    r"(https?://[^\s'\"<>]+m3u8[^\s'\"<>]*)",
+    caseSensitive: false,
+  ).firstMatch(html);
   return match?.group(1);
 }
 
 Map<String, String> _extractMasterPlaylistMeta(String html) {
   final meta = <String, String>{};
-  final urlMatch = RegExp(r'url\\s*:\\s*[\\\'"]([^\\\'"]+)', caseSensitive: false).firstMatch(html);
-  final tokenMatch = RegExp(r'token\\s*:\\s*[\\\'"]([^\\\'"]+)', caseSensitive: false).firstMatch(html);
-  final expiresMatch = RegExp(r'expires\\s*:\\s*[\\\'"]?(\\d+)', caseSensitive: false).firstMatch(html);
+  final urlMatch = RegExp(
+    r"url\s*:\s*['\"]([^'\"]+)",
+    caseSensitive: false,
+  ).firstMatch(html);
+  final tokenMatch = RegExp(
+    r"token\s*:\s*['\"]([^'\"]+)",
+    caseSensitive: false,
+  ).firstMatch(html);
+  final expiresMatch = RegExp(
+    r"expires\s*:\s*['\"]?(\d+)",
+    caseSensitive: false,
+  ).firstMatch(html);
   if (urlMatch != null) {
     meta['url'] = urlMatch.group(1) ?? '';
   }
