@@ -22,6 +22,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   final Map<String, int> _loginAttempts = <String, int>{};
   String? _streamingUnityHost;
   String? _preferredHost;
+  bool _showFillButton = false;
 
   @override
   void initState() {
@@ -32,6 +33,17 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
         '(KHTML, like Gecko) Chrome/122.0 Safari/537.36',
       )
+      ..addJavaScriptChannel(
+        'ScLoginAssist',
+        onMessageReceived: (message) {
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _showFillButton = message.message == 'focus';
+          });
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: _handleNavigationRequest,
@@ -39,6 +51,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
             _syncState();
             _maybeAutoLogin();
             _maybeUpdatePreferredHost();
+            _setupLoginFieldListeners();
           },
         ),
       );
@@ -97,7 +110,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       return;
     }
     final attempts = _loginAttempts[currentUrl] ?? 0;
-    if (attempts >= 3) {
+    if (attempts >= 1) {
       return;
     }
     _loginAttempts[currentUrl] = attempts + 1;
@@ -201,13 +214,109 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       })();
     ''';
     await _controller.runJavaScript(payload);
-    if (attempts == 0) {
-      await Future.delayed(const Duration(milliseconds: 650));
-      final stillUrl = await _controller.currentUrl();
-      if (stillUrl == currentUrl) {
-        await _controller.runJavaScript(payload);
-      }
+  }
+
+  Future<void> _setupLoginFieldListeners() async {
+    await _controller.runJavaScript('''
+      (() => {
+        const already = window.__scLoginListenersInstalled;
+        if (already) return;
+        window.__scLoginListenersInstalled = true;
+        const selectors = [
+          'input[name="email"]',
+          'input[name="login"]',
+          'input[name="username"]',
+          'input[autocomplete="username"]',
+          'input[autocomplete="email"]',
+          'input[type="email"]',
+          'input[type="password"]'
+        ];
+        const attach = () => {
+          selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+              if (el.__scLoginBound) return;
+              el.__scLoginBound = true;
+              el.addEventListener('focus', () => {
+                if (window.ScLoginAssist) {
+                  window.ScLoginAssist.postMessage('focus');
+                }
+              });
+              el.addEventListener('blur', () => {
+                if (window.ScLoginAssist) {
+                  window.ScLoginAssist.postMessage('blur');
+                }
+              });
+            });
+          });
+        };
+        attach();
+        const observer = new MutationObserver(() => attach());
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      })();
+    ''');
+  }
+
+  Future<void> _fillCredentials() async {
+    final auth = Get.find<StreamingCommunityAuthService>();
+    final username = auth.getUsername().trim();
+    final password = await auth.getPassword();
+    if (username.isEmpty || password.isEmpty) {
+      return;
     }
+    final payload = '''
+      (() => {
+        const userValue = ${_escapeJsString(username)};
+        const passValue = ${_escapeJsString(password)};
+        const setNativeValue = (element, value) => {
+          const proto = Object.getPrototypeOf(element);
+          const setter =
+            Object.getOwnPropertyDescriptor(proto, 'value')?.set ||
+            Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (setter) {
+            setter.call(element, value);
+          } else {
+            element.value = value;
+          }
+          element.setAttribute('value', value);
+        };
+        const dispatchInput = (element, value) => {
+          try {
+            element.dispatchEvent(new InputEvent('input', {
+              bubbles: true,
+              data: value,
+              inputType: 'insertText'
+            }));
+          } catch (_) {
+            element.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          element.dispatchEvent(new Event('change', { bubbles: true }));
+          element.dispatchEvent(new Event('keyup', { bubbles: true }));
+        };
+        const userSelectors = [
+          'input[name="email"]',
+          'input[name="login"]',
+          'input[name="username"]',
+          'input[autocomplete="username"]',
+          'input[autocomplete="email"]',
+          'input[type="email"]',
+          'input[type="text"]'
+        ];
+        const passSelector = 'input[type="password"]';
+        const userInput = userSelectors
+          .map(sel => document.querySelector(sel))
+          .find(el => el);
+        const passInput = document.querySelector(passSelector);
+        if (!userInput || !passInput) return false;
+        userInput.focus();
+        setNativeValue(userInput, userValue);
+        dispatchInput(userInput, userValue);
+        passInput.focus();
+        setNativeValue(passInput, passValue);
+        dispatchInput(passInput, passValue);
+        return true;
+      })();
+    ''';
+    await _controller.runJavaScript(payload);
   }
 
   Future<void> _maybeUpdatePreferredHost() async {
@@ -366,6 +475,12 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
                 onPressed: _reload,
                 icon: const Icon(Icons.refresh),
               ),
+              if (_showFillButton)
+                IconButton(
+                  tooltip: 'Compila credenziali',
+                  onPressed: _fillCredentials,
+                  icon: const Icon(Icons.vpn_key),
+                ),
               const Spacer(),
               if (_loading) const SizedBox.square(dimension: 20, child: CircularProgressIndicator()),
             ],
