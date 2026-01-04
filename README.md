@@ -35,7 +35,7 @@ Tutti gli anime nell'app sono con sottotitoli o doppiaggio italiano.
 Puoi scaricare l'app dall'ultima release [qui](https://github.com/Nokitomo/AniVerse/releases/latest)
 
 ### iOS
-Per usarla su iOS devi compilarla tu, mi spiace :/
+Puoi scaricare l'IPA dalle release GitHub e installarla con LiveContainer.
 
 ## Compilazione
 ### Android
