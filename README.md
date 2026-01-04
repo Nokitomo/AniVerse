@@ -43,4 +43,4 @@ Puoi scaricare l'IPA dalle release GitHub e installarla con LiveContainer.
 
 ### iOS
 Puoi eseguire sul tuo dispositivo senza licenza Apple Developer con `flutter run --release` o compilare con Xcode. <br>
-Funziona per una settimana, poi devi reinstallare.
+Per gli utenti, il flusso supportato e': dall'app si controllano gli aggiornamenti, si scarica l'IPA e si apre con LiveContainer.

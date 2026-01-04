@@ -38,6 +38,8 @@ Note:
 - mkdir -p build/ios/ipa/Payload
 - cp -R build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
 - cd build/ios/ipa && zip -r AniVerse-unsigned.ipa Payload
+ 
+Nota: per gli utenti finali il flusso supportato e' l'IPA scaricata dall'app e installata con LiveContainer.
 
 ## Desktop (Windows / macOS / Linux)
 Prerequisiti: abilitare il target desktop in Flutter.

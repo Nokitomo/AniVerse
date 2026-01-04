@@ -23,6 +23,7 @@ Il keystore viene decodificato in:
 - Pacchettizza IPA
 - Carica artifact
 - Pubblica GitHub release (solo run su tag)
+Nota: l'IPA e' non firmata ed e' pensata per LiveContainer.
 
 ## windows-msix.yml
 - Trigger: push di tag che matchano v*

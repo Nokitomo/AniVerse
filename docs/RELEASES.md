@@ -21,8 +21,8 @@ Se il titolo release o il nome asset cambiano, l'OTA fallira.
 
 ## Aggiornamenti iOS (LiveContainer)
 Per iOS non e' possibile aggiornare l'app in modo automatico. Il flusso supportato e':
-- L'app scarica il file IPA dalla release.
-- L'utente apre l'IPA con LiveContainer e installa la nuova versione.
+- L'app segnala l'aggiornamento, scarica l'IPA e apre il foglio di condivisione.
+- L'utente salva l'IPA e la apre con LiveContainer per sovrascrivere l'app.
 
 Asset richiesto:
 - AniVerse-unsigned.ipa
