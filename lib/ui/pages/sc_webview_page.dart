@@ -1,5 +1,7 @@
 import 'package:aniverse/helper/streamingcommunity_api.dart';
+import 'package:aniverse/services/app_section_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class ScWebViewPage extends StatefulWidget {
@@ -15,6 +17,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   bool _canGoBack = false;
   bool _canGoForward = false;
   String? _homeUrl;
+  String? _baseHost;
 
   @override
   void initState() {
@@ -27,10 +30,35 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       )
       ..setNavigationDelegate(
         NavigationDelegate(
+          onNavigationRequest: _handleNavigationRequest,
           onPageFinished: (_) => _syncState(),
         ),
       );
     _loadHome();
+  }
+
+  NavigationDecision _handleNavigationRequest(NavigationRequest request) {
+    if (!request.isMainFrame) {
+      return NavigationDecision.navigate;
+    }
+    final uri = Uri.tryParse(request.url);
+    if (uri == null) {
+      return NavigationDecision.prevent;
+    }
+    if (uri.scheme == 'about' ||
+        uri.scheme == 'data' ||
+        uri.scheme == 'blob') {
+      return NavigationDecision.navigate;
+    }
+    final host = uri.host.toLowerCase();
+    if (_isAnimeUnityHost(host)) {
+      Get.find<AppSectionController>().switchTo(AppSection.anime);
+      return NavigationDecision.prevent;
+    }
+    if (_isAllowedHost(host)) {
+      return NavigationDecision.navigate;
+    }
+    return NavigationDecision.prevent;
   }
 
   Future<void> _syncState() async {
@@ -52,6 +80,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     });
     final baseUrl = await getStreamingCommunityBaseUrl();
     _homeUrl = '$baseUrl/';
+    _baseHost = Uri.parse(baseUrl).host.toLowerCase();
     await _controller.loadRequest(Uri.parse(_homeUrl!));
   }
 
@@ -71,6 +100,28 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       _loading = true;
     });
     await _controller.loadRequest(Uri.parse(_homeUrl!));
+  }
+
+  bool _isAllowedHost(String host) {
+    final baseHost = _baseHost;
+    if (baseHost != null && _isSameOrSubdomain(host, baseHost)) {
+      return true;
+    }
+    if (_isSameOrSubdomain(host, 'vixcloud.co')) {
+      return true;
+    }
+    if (_isSameOrSubdomain(host, 'scws-content.net')) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isAnimeUnityHost(String host) {
+    return _isSameOrSubdomain(host, 'animeunity.so');
+  }
+
+  bool _isSameOrSubdomain(String host, String allowedHost) {
+    return host == allowedHost || host.endsWith('.$allowedHost');
   }
 
   @override

@@ -24,7 +24,8 @@
 - Shortcut desktop: Backspace/Esc per indietro, Ctrl+F per ricerca, Spazio per play/pausa nel player
 - Aggiornamenti desktop automatici (Windows MSIX)
 - Selettore sezione (drawer): Anime e Film/Serie TV con reset alla Home
-- Sezione Film/Serie TV: navigazione tramite WebView StreamingCommunity
+- Sezione Film/Serie TV: navigazione tramite WebView StreamingCommunity con blocco redirect esterni
+- Link AnimeUnity nella WebView rimanda alla sezione Anime dell'app
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:aniverse/ui/pages/calendar_page.dart';
 import 'package:aniverse/ui/pages/explore_page.dart';
 import 'package:aniverse/ui/pages/settings_page.dart';
+import 'package:aniverse/services/app_section_controller.dart';
 import 'package:aniverse/ui/pages/sc_webview_page.dart';
 import 'package:aniverse/ui/pages/home_page.dart';
 import 'package:aniverse/ui/pages/archive_page.dart';
@@ -16,11 +17,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  var index = 0;
-  _AppSection section = _AppSection.anime;
+  late final AppSectionController _sectionController;
+
   @override
   void initState() {
     super.initState();
+    _sectionController = Get.put(AppSectionController());
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -32,51 +34,59 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = _buildTabs();
-    final destinations = _buildDestinations(context);
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: Text(section == _AppSection.media ? "StreamingCommunity" : "Anime"),
-      ),
-      drawer: _buildDrawer(context),
-      body: IndexedStack(
-        index: index,
-        children: tabs,
-      ),
-      bottomNavigationBar: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          height: 70,
-          indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
-          labelTextStyle: MaterialStateProperty.all(
-            const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+    return GetX<AppSectionController>(
+      builder: (controller) {
+        final section = controller.section.value;
+        final index = controller.index.value;
+        final tabs = _buildTabs(section);
+        final destinations = _buildDestinations(context, section);
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            leading: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
+            title: Text(
+              section == AppSection.media ? "StreamingCommunity" : "Anime",
             ),
           ),
-        ),
-        child: NavigationBar(
-          // labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-          animationDuration: const Duration(milliseconds: 1200),
-          selectedIndex: index,
-          onDestinationSelected: (value) =>
-              index == value ? null : setState(() => index = value),
-          destinations: destinations,
-        ),
-      ),
+          drawer: _buildDrawer(context, controller, section),
+          body: IndexedStack(
+            index: index,
+            children: tabs,
+          ),
+          bottomNavigationBar: NavigationBarTheme(
+            data: NavigationBarThemeData(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              height: 70,
+              indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
+              labelTextStyle: MaterialStateProperty.all(
+                const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            child: NavigationBar(
+              // labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+              animationDuration: const Duration(milliseconds: 1200),
+              selectedIndex: index,
+              onDestinationSelected: (value) =>
+                  controller.setIndex(value),
+              destinations: destinations,
+            ),
+          ),
+        );
+      },
     );
   }
 
-  List<Widget> _buildTabs() {
-    if (section == _AppSection.media) {
+  List<Widget> _buildTabs(AppSection section) {
+    if (section == AppSection.media) {
       return [
         const ScWebViewPage(),
         SettingsPage(),
@@ -91,8 +101,11 @@ class _MainPageState extends State<MainPage> {
     ];
   }
 
-  List<NavigationDestination> _buildDestinations(BuildContext context) {
-    if (section == _AppSection.media) {
+  List<NavigationDestination> _buildDestinations(
+    BuildContext context,
+    AppSection section,
+  ) {
+    if (section == AppSection.media) {
       return [
         NavigationDestination(
           icon: Icon(
@@ -177,7 +190,11 @@ class _MainPageState extends State<MainPage> {
     ];
   }
 
-  Drawer _buildDrawer(BuildContext context) {
+  Drawer _buildDrawer(
+    BuildContext context,
+    AppSectionController controller,
+    AppSection section,
+  ) {
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -195,29 +212,19 @@ class _MainPageState extends State<MainPage> {
             ListTile(
               leading: const Icon(Icons.animation),
               title: const Text("Anime"),
-              selected: section == _AppSection.anime,
+              selected: section == AppSection.anime,
               onTap: () {
                 Navigator.of(context).pop();
-                if (section != _AppSection.anime) {
-                  setState(() {
-                    section = _AppSection.anime;
-                    index = 0;
-                  });
-                }
+                controller.switchTo(AppSection.anime);
               },
             ),
             ListTile(
               leading: const Icon(Icons.movie),
               title: const Text("Film / Serie TV"),
-              selected: section == _AppSection.media,
+              selected: section == AppSection.media,
               onTap: () {
                 Navigator.of(context).pop();
-                if (section != _AppSection.media) {
-                  setState(() {
-                    section = _AppSection.media;
-                    index = 0;
-                  });
-                }
+                controller.switchTo(AppSection.media);
               },
             ),
           ],
@@ -225,10 +232,5 @@ class _MainPageState extends State<MainPage> {
       ),
     );
   }
-}
-
-enum _AppSection {
-  anime,
-  media,
 }
 
