@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   flutter_meedu_videoplayer
+  flutter_secure_storage_linux
   fvp
   objectbox_flutter_libs
   screen_retriever

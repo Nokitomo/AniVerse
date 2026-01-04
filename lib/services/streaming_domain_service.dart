@@ -97,3 +97,7 @@ Future<String> getStreamingCommunityBaseUrl() async {
 
   return 'https://streamingcommunityz.gold';
 }
+
+Future<String> getStreamingUnityBaseUrl() async {
+  return 'https://streamingunity.so';
+}

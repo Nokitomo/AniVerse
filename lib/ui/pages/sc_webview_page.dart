@@ -20,6 +20,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   String? _homeUrl;
   String? _baseHost;
   final Set<String> _loginAttempts = <String>{};
+  String? _streamingUnityHost;
 
   @override
   void initState() {
@@ -155,7 +156,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     if (result is bool) {
       return result;
     }
-    final normalized = result?.toString().toLowerCase();
+    final normalized = result.toString().toLowerCase();
     return normalized == 'true';
   }
 
@@ -168,7 +169,12 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       _loading = true;
     });
     final baseUrl = await getStreamingCommunityBaseUrl();
-    _homeUrl = '$baseUrl/';
+    final unityUrl = await getStreamingUnityBaseUrl();
+    _streamingUnityHost = Uri.parse(unityUrl).host.toLowerCase();
+    final auth = Get.find<StreamingCommunityAuthService>();
+    final preferUnity = auth.isAutoLoginEnabled();
+    final preferredBase = preferUnity ? unityUrl : baseUrl;
+    _homeUrl = '$preferredBase/';
     _baseHost = Uri.parse(baseUrl).host.toLowerCase();
     await _controller.loadRequest(Uri.parse(_homeUrl!));
   }
@@ -194,6 +200,10 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   bool _isAllowedHost(String host) {
     final baseHost = _baseHost;
     if (baseHost != null && _isSameOrSubdomain(host, baseHost)) {
+      return true;
+    }
+    final unityHost = _streamingUnityHost;
+    if (unityHost != null && _isSameOrSubdomain(host, unityHost)) {
       return true;
     }
     if (_isSameOrSubdomain(host, 'vixcloud.co')) {

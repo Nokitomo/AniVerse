@@ -108,6 +108,7 @@ dependency_overrides:
   win32:
     path: ./third_party/win32
   frontend_server_client: ^4.0.0
+  flutter_secure_storage_windows: 2.1.1
 
 flutter_launcher_icons:
   android: true

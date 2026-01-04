@@ -28,6 +28,7 @@
 - Link AnimeUnity nella WebView rimanda alla sezione Anime dell'app
 - UI native Film/Serie (home/esplora/archivio/dettaglio/player) mantenuta per futura integrazione TMDB/VixSrc
 - Credenziali StreamingCommunity salvate nelle impostazioni con login automatico in WebView
+- WebView usa `streamingunity.so` come base quando il login automatico e' attivo
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.
