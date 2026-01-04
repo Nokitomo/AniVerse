@@ -19,7 +19,6 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   bool _canGoForward = false;
   String? _homeUrl;
   String? _baseHost;
-  final Map<String, int> _loginAttempts = <String, int>{};
   String? _streamingUnityHost;
   String? _preferredHost;
   bool _showFillButton = false;
@@ -49,7 +48,6 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
           onNavigationRequest: _handleNavigationRequest,
           onPageFinished: (_) {
             _syncState();
-            _maybeAutoLogin();
             _maybeUpdatePreferredHost();
             _setupLoginFieldListeners();
           },
@@ -93,127 +91,6 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       _canGoBack = canGoBack;
       _canGoForward = canGoForward;
     });
-  }
-
-  Future<void> _maybeAutoLogin() async {
-    final auth = Get.find<StreamingCommunityAuthService>();
-    if (!auth.isAutoLoginEnabled()) {
-      return;
-    }
-    final username = auth.getUsername().trim();
-    final password = await auth.getPassword();
-    if (username.isEmpty || password.isEmpty) {
-      return;
-    }
-    final currentUrl = await _controller.currentUrl();
-    if (currentUrl == null || currentUrl.isEmpty) {
-      return;
-    }
-    final attempts = _loginAttempts[currentUrl] ?? 0;
-    if (attempts >= 1) {
-      return;
-    }
-    _loginAttempts[currentUrl] = attempts + 1;
-    final uri = Uri.tryParse(currentUrl);
-    if (uri == null) {
-      return;
-    }
-    final host = uri.host.toLowerCase();
-    final baseHost = _baseHost;
-    final unityHost = _streamingUnityHost;
-    final isStreamingHost = (baseHost != null && _isSameOrSubdomain(host, baseHost)) ||
-        (unityHost != null && _isSameOrSubdomain(host, unityHost));
-    if (!isStreamingHost) {
-      return;
-    }
-    final hasPasswordField = await _runJsBool(
-      "document.querySelector('input[type=\"password\"]') != null",
-    );
-    if (!hasPasswordField) {
-      return;
-    }
-    _loginAttempts[currentUrl] = attempts + 1;
-    final payload = '''
-      (() => {
-        const userValue = ${_escapeJsString(username)};
-        const passValue = ${_escapeJsString(password)};
-        const setNativeValue = (element, value) => {
-          const proto = Object.getPrototypeOf(element);
-          const setter =
-            Object.getOwnPropertyDescriptor(proto, 'value')?.set ||
-            Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-          if (setter) {
-            setter.call(element, value);
-          } else {
-            element.value = value;
-          }
-          element.setAttribute('value', value);
-        };
-        const dispatchInput = (element, value) => {
-          try {
-            element.dispatchEvent(new InputEvent('input', {
-              bubbles: true,
-              data: value,
-              inputType: 'insertText'
-            }));
-          } catch (_) {
-            element.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-          element.dispatchEvent(new Event('change', { bubbles: true }));
-          element.dispatchEvent(new Event('keyup', { bubbles: true }));
-        };
-        const userSelectors = [
-          'input[name=\"email\"]',
-          'input[name=\"login\"]',
-          'input[name=\"username\"]',
-          'input[autocomplete=\"username\"]',
-          'input[autocomplete=\"email\"]',
-          'input[type=\"email\"]',
-          'input[type=\"text\"]'
-        ];
-        const passSelector = 'input[type=\"password\"]';
-        const userInput = userSelectors
-          .map(sel => document.querySelector(sel))
-          .find(el => el);
-        const passInput = document.querySelector(passSelector);
-        if (!userInput || !passInput) return false;
-        const applyValues = () => {
-          userInput.focus();
-          setNativeValue(userInput, userValue);
-          dispatchInput(userInput, userValue);
-          passInput.focus();
-          setNativeValue(passInput, passValue);
-          dispatchInput(passInput, passValue);
-        };
-        applyValues();
-        let tries = 0;
-        const maxTries = 4;
-        const ensureValues = () => {
-          const u = userInput.value || '';
-          const p = passInput.value || '';
-          if (u && p) return;
-          if (tries >= maxTries) return;
-          tries += 1;
-          applyValues();
-          setTimeout(ensureValues, 300);
-        };
-        setTimeout(ensureValues, 250);
-        const form = passInput.closest('form') || userInput.closest('form');
-        const submitButton = form
-          ? form.querySelector('button[type=\"submit\"], input[type=\"submit\"]')
-          : document.querySelector('button[type=\"submit\"], input[type=\"submit\"]');
-        if (submitButton) {
-          submitButton.click();
-          return true;
-        }
-        if (form) {
-          form.submit();
-          return true;
-        }
-        return false;
-      })();
-    ''';
-    await _controller.runJavaScript(payload);
   }
 
   Future<void> _setupLoginFieldListeners() async {

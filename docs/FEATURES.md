@@ -27,8 +27,8 @@
 - Sezione Film/Serie TV: navigazione tramite WebView StreamingCommunity con blocco redirect esterni
 - Link AnimeUnity nella WebView rimanda alla sezione Anime dell'app
 - UI native Film/Serie (home/esplora/archivio/dettaglio/player) mantenuta per futura integrazione TMDB/VixSrc
-- Credenziali StreamingCommunity salvate nelle impostazioni con login automatico in WebView
-- WebView usa un dominio preferito (salvato dopo login); se l'auto-login e' attivo parte da `streamingunity.so`
+- Credenziali StreamingCommunity salvate nelle impostazioni con compilazione manuale in WebView
+- WebView usa un dominio preferito (salvato dopo login); se l'auto-login e' attivo parte da `streamingunity.so` (senza compilazione automatica)
 - Pulsante "Compila credenziali" nella WebView quando si seleziona un campo login
 
 ## Parzialmente implementate
