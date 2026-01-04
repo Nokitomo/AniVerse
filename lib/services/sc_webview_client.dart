@@ -51,10 +51,18 @@ class ScWebViewClient {
       );
 
       final dataPage = await _readDataPageWithRetry(controller);
-      if (dataPage.trim().isEmpty) {
+      if (dataPage.trim().isNotEmpty) {
+        return dataPage;
+      }
+
+      final htmlResult = await controller.runJavaScriptReturningResult(
+        'document.documentElement.outerHTML',
+      );
+      final html = _normalizeJsResult(htmlResult);
+      if (html.trim().isEmpty) {
         throw Exception('data-page vuoto per $url');
       }
-      return dataPage;
+      return html;
     });
   }
 

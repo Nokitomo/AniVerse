@@ -211,6 +211,10 @@ Future<Map<String, dynamic>> _fetchInertiaDataPage(
       throw _ScHttpException(403, url);
     }
     final raw = await webViewClient.fetchDataPageAttribute(url);
+    final trimmed = raw.trimLeft();
+    if (trimmed.startsWith('<') || trimmed.contains('<html')) {
+      return _extractDataPage(raw);
+    }
     return _decodeDataPagePayload(raw);
   }
   if (response.statusCode < 200 || response.statusCode >= 300) {
