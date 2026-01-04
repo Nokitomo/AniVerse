@@ -194,7 +194,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     }
     final unityHost = _streamingUnityHost;
     final preferUnity = auth.isAutoLoginEnabled() && unityHost != null && unityHost.isNotEmpty;
-    final targetHost = preferUnity ? unityHost! : host;
+    final targetHost = preferUnity ? unityHost : host;
     if (_preferredHost != targetHost) {
       _preferredHost = targetHost;
       await auth.setPreferredHost(targetHost);
