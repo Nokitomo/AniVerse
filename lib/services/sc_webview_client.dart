@@ -8,7 +8,6 @@ class ScWebViewClient {
   WebViewController? _controller;
   Future<void> _queue = Future.value();
   Completer<void>? _pageLoadCompleter;
-  String? _pendingUrl;
 
   void attachController(WebViewController controller) {
     _controller = controller;
@@ -22,7 +21,7 @@ class ScWebViewClient {
         },
         onWebResourceError: (error) {
           final completer = _pageLoadCompleter;
-          final isMainFrame = error.isForMainFrame;
+          final isMainFrame = error.isForMainFrame == true;
           if (isMainFrame) {
             debugPrint(
               'SC WebView error mainFrame url=${error.url} '
@@ -44,7 +43,6 @@ class ScWebViewClient {
         throw Exception('StreamingCommunity WebView non pronta');
       }
 
-      _pendingUrl = url;
       _pageLoadCompleter = Completer<void>();
       await controller.loadRequest(Uri.parse(url));
       await _pageLoadCompleter!.future.timeout(
