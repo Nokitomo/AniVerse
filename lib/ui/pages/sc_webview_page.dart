@@ -19,7 +19,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   bool _canGoForward = false;
   String? _homeUrl;
   String? _baseHost;
-  final Set<String> _loginAttempts = <String>{};
+  final Map<String, int> _loginAttempts = <String, int>{};
   String? _streamingUnityHost;
   String? _preferredHost;
 
@@ -96,9 +96,11 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     if (currentUrl == null || currentUrl.isEmpty) {
       return;
     }
-    if (_loginAttempts.contains(currentUrl)) {
+    final attempts = _loginAttempts[currentUrl] ?? 0;
+    if (attempts >= 2) {
       return;
     }
+    _loginAttempts[currentUrl] = attempts + 1;
     final uri = Uri.tryParse(currentUrl);
     if (uri == null) {
       return;
@@ -117,9 +119,20 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     if (!hasPasswordField) {
       return;
     }
-    _loginAttempts.add(currentUrl);
+    _loginAttempts[currentUrl] = attempts + 1;
     final payload = '''
       (() => {
+        const setNativeValue = (element, value) => {
+          const setter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype,
+            'value'
+          )?.set;
+          if (setter) {
+            setter.call(element, value);
+          } else {
+            element.value = value;
+          }
+        };
         const userSelectors = [
           'input[name=\"email\"]',
           'input[name=\"login\"]',
@@ -136,11 +149,11 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
         const passInput = document.querySelector(passSelector);
         if (!userInput || !passInput) return false;
         userInput.focus();
-        userInput.value = ${_escapeJsString(username)};
+        setNativeValue(userInput, ${_escapeJsString(username)});
         userInput.dispatchEvent(new Event('input', { bubbles: true }));
         userInput.dispatchEvent(new Event('change', { bubbles: true }));
         passInput.focus();
-        passInput.value = ${_escapeJsString(password)};
+        setNativeValue(passInput, ${_escapeJsString(password)});
         passInput.dispatchEvent(new Event('input', { bubbles: true }));
         passInput.dispatchEvent(new Event('change', { bubbles: true }));
         const form = passInput.closest('form') || userInput.closest('form');
@@ -159,6 +172,13 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       })();
     ''';
     await _controller.runJavaScript(payload);
+    if (attempts == 0) {
+      await Future.delayed(const Duration(milliseconds: 650));
+      final stillUrl = await _controller.currentUrl();
+      if (stillUrl == currentUrl) {
+        await _controller.runJavaScript(payload);
+      }
+    }
   }
 
   Future<void> _maybeUpdatePreferredHost() async {
