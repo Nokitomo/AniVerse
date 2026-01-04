@@ -21,6 +21,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   String? _baseHost;
   final Set<String> _loginAttempts = <String>{};
   String? _streamingUnityHost;
+  String? _preferredHost;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
           onPageFinished: (_) {
             _syncState();
             _maybeAutoLogin();
+            _maybeUpdatePreferredHost();
           },
         ),
       );
@@ -103,7 +105,10 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     }
     final host = uri.host.toLowerCase();
     final baseHost = _baseHost;
-    if (baseHost == null || !_isSameOrSubdomain(host, baseHost)) {
+    final unityHost = _streamingUnityHost;
+    final isStreamingHost = (baseHost != null && _isSameOrSubdomain(host, baseHost)) ||
+        (unityHost != null && _isSameOrSubdomain(host, unityHost));
+    if (!isStreamingHost) {
       return;
     }
     final hasPasswordField = await _runJsBool(
@@ -117,7 +122,10 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       (() => {
         const userSelectors = [
           'input[name=\"email\"]',
+          'input[name=\"login\"]',
           'input[name=\"username\"]',
+          'input[autocomplete=\"username\"]',
+          'input[autocomplete=\"email\"]',
           'input[type=\"email\"]',
           'input[type=\"text\"]'
         ];
@@ -130,9 +138,11 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
         userInput.focus();
         userInput.value = ${_escapeJsString(username)};
         userInput.dispatchEvent(new Event('input', { bubbles: true }));
+        userInput.dispatchEvent(new Event('change', { bubbles: true }));
         passInput.focus();
         passInput.value = ${_escapeJsString(password)};
         passInput.dispatchEvent(new Event('input', { bubbles: true }));
+        passInput.dispatchEvent(new Event('change', { bubbles: true }));
         const form = passInput.closest('form') || userInput.closest('form');
         const submitButton = form
           ? form.querySelector('button[type=\"submit\"], input[type=\"submit\"]')
@@ -149,6 +159,46 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       })();
     ''';
     await _controller.runJavaScript(payload);
+  }
+
+  Future<void> _maybeUpdatePreferredHost() async {
+    final auth = Get.find<StreamingCommunityAuthService>();
+    final currentUrl = await _controller.currentUrl();
+    if (currentUrl == null || currentUrl.isEmpty) {
+      return;
+    }
+    final uri = Uri.tryParse(currentUrl);
+    if (uri == null) {
+      return;
+    }
+    final host = uri.host.toLowerCase();
+    if (!_isAllowedHost(host)) {
+      return;
+    }
+    final loggedIn = await _runJsBool(
+      '''
+      (() => {
+        const logoutLink = Array.from(document.querySelectorAll('a'))
+          .some(el => {
+            const href = (el.getAttribute('href') || '').toLowerCase();
+            const text = (el.textContent || '').toLowerCase();
+            return href.includes('logout') || text.includes('logout') || text.includes('esci');
+          });
+        const userMenu = document.querySelector('[data-testid*="user"], .user-menu, .user-dropdown, .dropdown-user');
+        return Boolean(logoutLink || userMenu);
+      })();
+      ''',
+    );
+    if (!loggedIn) {
+      return;
+    }
+    final unityHost = _streamingUnityHost;
+    final preferUnity = auth.isAutoLoginEnabled() && unityHost != null && unityHost.isNotEmpty;
+    final targetHost = preferUnity ? unityHost! : host;
+    if (_preferredHost != targetHost) {
+      _preferredHost = targetHost;
+      await auth.setPreferredHost(targetHost);
+    }
   }
 
   Future<bool> _runJsBool(String script) async {
@@ -171,11 +221,17 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     final baseUrl = await getStreamingCommunityBaseUrl();
     final unityUrl = await getStreamingUnityBaseUrl();
     _streamingUnityHost = Uri.parse(unityUrl).host.toLowerCase();
-    final auth = Get.find<StreamingCommunityAuthService>();
-    final preferUnity = auth.isAutoLoginEnabled();
-    final preferredBase = preferUnity ? unityUrl : baseUrl;
-    _homeUrl = '$preferredBase/';
     _baseHost = Uri.parse(baseUrl).host.toLowerCase();
+    final auth = Get.find<StreamingCommunityAuthService>();
+    final preferredHost = auth.getPreferredHost().trim();
+    if (preferredHost.isNotEmpty) {
+      _preferredHost = preferredHost.toLowerCase();
+      _homeUrl = 'https://$_preferredHost/';
+    } else if (auth.isAutoLoginEnabled()) {
+      _homeUrl = '$unityUrl/';
+    } else {
+      _homeUrl = '$baseUrl/';
+    }
     await _controller.loadRequest(Uri.parse(_homeUrl!));
   }
 
