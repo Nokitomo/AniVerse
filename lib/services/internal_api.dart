@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:archive/archive_io.dart';
 import 'package:aniverse/services/internal_db.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';

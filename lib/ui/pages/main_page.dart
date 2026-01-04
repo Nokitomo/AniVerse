@@ -8,6 +8,7 @@ import 'package:aniverse/services/app_section_controller.dart';
 import 'package:aniverse/ui/pages/sc_webview_page.dart';
 import 'package:aniverse/ui/pages/home_page.dart';
 import 'package:aniverse/ui/pages/archive_page.dart';
+import 'package:get/get.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -17,12 +18,10 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  late final AppSectionController _sectionController;
-
   @override
   void initState() {
     super.initState();
-    _sectionController = Get.put(AppSectionController());
+    Get.put(AppSectionController());
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
