@@ -1,9 +1,9 @@
 name: aniverse
-description: App per anime e sezione film/serie via WebView
+description: App per anime e film/serie con sezione WebView
 
 publish_to: "none"
 
-version: 1.1.19+1
+version: 1.1.19+2
 
 environment:
   sdk: ">=3.3.1 <4.0.0"
@@ -135,7 +135,7 @@ msix_config:
   publisher_display_name: Nokitomo
   identity_name: com.nokitomo.aniverse
   publisher: CN=Nokitomo
-  msix_version: 1.1.18.0
+  msix_version: 1.1.19.2
   logo_path: assets/images/splash.png
   capabilities: internetClient
   sign_msix: false
