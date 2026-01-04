@@ -97,7 +97,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       return;
     }
     final attempts = _loginAttempts[currentUrl] ?? 0;
-    if (attempts >= 2) {
+    if (attempts >= 3) {
       return;
     }
     _loginAttempts[currentUrl] = attempts + 1;
@@ -122,16 +122,32 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
     _loginAttempts[currentUrl] = attempts + 1;
     final payload = '''
       (() => {
+        const userValue = ${_escapeJsString(username)};
+        const passValue = ${_escapeJsString(password)};
         const setNativeValue = (element, value) => {
-          const setter = Object.getOwnPropertyDescriptor(
-            window.HTMLInputElement.prototype,
-            'value'
-          )?.set;
+          const proto = Object.getPrototypeOf(element);
+          const setter =
+            Object.getOwnPropertyDescriptor(proto, 'value')?.set ||
+            Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
           if (setter) {
             setter.call(element, value);
           } else {
             element.value = value;
           }
+          element.setAttribute('value', value);
+        };
+        const dispatchInput = (element, value) => {
+          try {
+            element.dispatchEvent(new InputEvent('input', {
+              bubbles: true,
+              data: value,
+              inputType: 'insertText'
+            }));
+          } catch (_) {
+            element.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          element.dispatchEvent(new Event('change', { bubbles: true }));
+          element.dispatchEvent(new Event('keyup', { bubbles: true }));
         };
         const userSelectors = [
           'input[name=\"email\"]',
@@ -148,14 +164,27 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
           .find(el => el);
         const passInput = document.querySelector(passSelector);
         if (!userInput || !passInput) return false;
-        userInput.focus();
-        setNativeValue(userInput, ${_escapeJsString(username)});
-        userInput.dispatchEvent(new Event('input', { bubbles: true }));
-        userInput.dispatchEvent(new Event('change', { bubbles: true }));
-        passInput.focus();
-        setNativeValue(passInput, ${_escapeJsString(password)});
-        passInput.dispatchEvent(new Event('input', { bubbles: true }));
-        passInput.dispatchEvent(new Event('change', { bubbles: true }));
+        const applyValues = () => {
+          userInput.focus();
+          setNativeValue(userInput, userValue);
+          dispatchInput(userInput, userValue);
+          passInput.focus();
+          setNativeValue(passInput, passValue);
+          dispatchInput(passInput, passValue);
+        };
+        applyValues();
+        let tries = 0;
+        const maxTries = 4;
+        const ensureValues = () => {
+          const u = userInput.value || '';
+          const p = passInput.value || '';
+          if (u && p) return;
+          if (tries >= maxTries) return;
+          tries += 1;
+          applyValues();
+          setTimeout(ensureValues, 300);
+        };
+        setTimeout(ensureValues, 250);
         const form = passInput.closest('form') || userInput.closest('form');
         const submitButton = form
           ? form.querySelector('button[type=\"submit\"], input[type=\"submit\"]')
