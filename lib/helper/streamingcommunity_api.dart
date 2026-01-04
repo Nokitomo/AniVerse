@@ -144,6 +144,7 @@ Future<String> _fetchBodyWithWebView({
   String method = 'GET',
   Map<String, String>? headers,
   Object? body,
+  bool allowDomFallback = false,
 }) async {
   final webViewClient = _getScWebViewClient();
   if (webViewClient == null) {
@@ -155,6 +156,10 @@ Future<String> _fetchBodyWithWebView({
     headers: headers,
     body: body,
   );
+  if (response.statusCode == 0 && allowDomFallback) {
+    final raw = await webViewClient.fetchDataPageAttribute(url);
+    return raw;
+  }
   if (response.statusCode < 200 || response.statusCode >= 300) {
     throw _ScHttpException(response.statusCode, url);
   }
@@ -228,7 +233,10 @@ Future<Map<String, dynamic>> _fetchInertiaDataPage(
   );
   if (response.statusCode == 403) {
     debugPrint('SC home HTTP 403 from $url');
-    final raw = await _fetchBodyWithWebView(url: url);
+    final raw = await _fetchBodyWithWebView(
+      url: url,
+      allowDomFallback: true,
+    );
     final trimmed = raw.trimLeft();
     if (trimmed.startsWith('<') || trimmed.contains('<html')) {
       try {
@@ -498,7 +506,10 @@ Future<String> fetchStreamingCommunityIframeSrc({
   final response = await http.get(uri, headers: _defaultHeaders);
   String body;
   if (response.statusCode == 403) {
-    body = await _fetchBodyWithWebView(url: uri.toString());
+    body = await _fetchBodyWithWebView(
+      url: uri.toString(),
+      allowDomFallback: true,
+    );
   } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for iframe');
   } else {
@@ -579,6 +590,7 @@ Future<String> resolveStreamingCommunityStreamUrl({
     body = await _fetchBodyWithWebView(
       url: iframeUrl,
       headers: headers,
+      allowDomFallback: true,
     );
   } else if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('HTTP ${response.statusCode} for embed');

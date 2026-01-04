@@ -89,23 +89,27 @@ class ScWebViewClient {
       final jsPayload = jsonEncode(payload);
       final js = '''
         (async () => {
-          const opts = $jsPayload;
-          const method = opts.method || 'GET';
-          const headers = opts.headers || {};
-          const init = { method, headers, credentials: 'include' };
-          if (opts.body !== undefined && opts.body !== null) {
-            if (typeof opts.body === 'string') {
-              init.body = opts.body;
-            } else {
-              init.body = JSON.stringify(opts.body);
-              if (!headers['Content-Type'] && !headers['content-type']) {
-                headers['Content-Type'] = 'application/json';
+          try {
+            const opts = $jsPayload;
+            const method = opts.method || 'GET';
+            const headers = opts.headers || {};
+            const init = { method, headers, credentials: 'include' };
+            if (opts.body !== undefined && opts.body !== null) {
+              if (typeof opts.body === 'string') {
+                init.body = opts.body;
+              } else {
+                init.body = JSON.stringify(opts.body);
+                if (!headers['Content-Type'] && !headers['content-type']) {
+                  headers['Content-Type'] = 'application/json';
+                }
               }
             }
+            const resp = await fetch('${_escapeJsString(url)}', init);
+            const text = await resp.text();
+            return JSON.stringify({ status: resp.status, body: text });
+          } catch (err) {
+            return JSON.stringify({ status: 0, body: '', error: String(err) });
           }
-          const resp = await fetch('${_escapeJsString(url)}', init);
-          const text = await resp.text();
-          return JSON.stringify({ status: resp.status, body: text });
         })();
       ''';
       final result = await controller.runJavaScriptReturningResult(js);
