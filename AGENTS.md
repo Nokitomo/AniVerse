@@ -8,3 +8,4 @@ These rules are mandatory for any work on this repository.
 4) Always respond in Italian.
 5) Workflow iOS: gli aggiornamenti si gestiscono scaricando l'IPA dalle release e aprendo il file in LiveContainer.
 6) Quando mi chiedi di fare push con tag per avviare una release, devo anche preparare e pubblicare il changelog della release su GitHub.
+7) Dopo ogni modifica al codice devo eseguire `flutter analyze` (o comando equivalente). Gli "info" possono essere ignorati. Devo correggere solo errori bloccanti (rossi) e warning (gialli) senza cambiare il comportamento o rompere l'app prima di procedere con git e commit. Se non sono sicuro che il fix non alteri il comportamento, devo fermarmi e fornire un report dettagliato con possibili soluzioni.
