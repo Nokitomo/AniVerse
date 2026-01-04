@@ -2,6 +2,7 @@ import 'package:aniverse/services/internal_api.dart';
 import 'package:aniverse/ui/widgets/link_button.dart';
 import 'package:aniverse/ui/widgets/settings_fragments/app_update.dart';
 import 'package:aniverse/ui/widgets/settings_fragments/db_backup_handler.dart';
+import 'package:aniverse/ui/widgets/settings_fragments/streamingcommunity_credentials.dart';
 import 'package:aniverse/ui/widgets/settings_fragments/theme_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -44,6 +45,11 @@ class SettingsPage extends StatelessWidget {
                     endIndent: 30,
                   ),
                   DbBackup(),
+                  const Divider(
+                    indent: 30,
+                    endIndent: 30,
+                  ),
+                  const StreamingCommunityCredentials(),
                   const Divider(
                     indent: 30,
                     endIndent: 30,

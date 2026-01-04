@@ -27,6 +27,7 @@
 - Sezione Film/Serie TV: navigazione tramite WebView StreamingCommunity con blocco redirect esterni
 - Link AnimeUnity nella WebView rimanda alla sezione Anime dell'app
 - UI native Film/Serie (home/esplora/archivio/dettaglio/player) mantenuta per futura integrazione TMDB/VixSrc
+- Credenziali StreamingCommunity salvate nelle impostazioni con login automatico in WebView
 
 ## Parzialmente implementate
 - Auto PiP in background disabilitato nel codice. Solo attivazione manuale.

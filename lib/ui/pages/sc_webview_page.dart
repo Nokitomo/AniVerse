@@ -1,5 +1,6 @@
 import 'package:aniverse/services/app_section_controller.dart';
 import 'package:aniverse/services/streaming_domain_service.dart';
+import 'package:aniverse/services/streamingcommunity_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -18,6 +19,7 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
   bool _canGoForward = false;
   String? _homeUrl;
   String? _baseHost;
+  final Set<String> _loginAttempts = <String>{};
 
   @override
   void initState() {
@@ -31,7 +33,10 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: _handleNavigationRequest,
-          onPageFinished: (_) => _syncState(),
+          onPageFinished: (_) {
+            _syncState();
+            _maybeAutoLogin();
+          },
         ),
       );
     _loadHome();
@@ -72,6 +77,90 @@ class _ScWebViewPageState extends State<ScWebViewPage> {
       _canGoBack = canGoBack;
       _canGoForward = canGoForward;
     });
+  }
+
+  Future<void> _maybeAutoLogin() async {
+    final auth = Get.find<StreamingCommunityAuthService>();
+    if (!auth.isAutoLoginEnabled()) {
+      return;
+    }
+    final username = auth.getUsername().trim();
+    final password = await auth.getPassword();
+    if (username.isEmpty || password.isEmpty) {
+      return;
+    }
+    final currentUrl = await _controller.currentUrl();
+    if (currentUrl == null || currentUrl.isEmpty) {
+      return;
+    }
+    if (_loginAttempts.contains(currentUrl)) {
+      return;
+    }
+    final uri = Uri.tryParse(currentUrl);
+    if (uri == null) {
+      return;
+    }
+    final host = uri.host.toLowerCase();
+    final baseHost = _baseHost;
+    if (baseHost == null || !_isSameOrSubdomain(host, baseHost)) {
+      return;
+    }
+    final hasPasswordField = await _runJsBool(
+      "document.querySelector('input[type=\"password\"]') != null",
+    );
+    if (!hasPasswordField) {
+      return;
+    }
+    _loginAttempts.add(currentUrl);
+    final payload = '''
+      (() => {
+        const userSelectors = [
+          'input[name=\"email\"]',
+          'input[name=\"username\"]',
+          'input[type=\"email\"]',
+          'input[type=\"text\"]'
+        ];
+        const passSelector = 'input[type=\"password\"]';
+        const userInput = userSelectors
+          .map(sel => document.querySelector(sel))
+          .find(el => el);
+        const passInput = document.querySelector(passSelector);
+        if (!userInput || !passInput) return false;
+        userInput.focus();
+        userInput.value = ${_escapeJsString(username)};
+        userInput.dispatchEvent(new Event('input', { bubbles: true }));
+        passInput.focus();
+        passInput.value = ${_escapeJsString(password)};
+        passInput.dispatchEvent(new Event('input', { bubbles: true }));
+        const form = passInput.closest('form') || userInput.closest('form');
+        const submitButton = form
+          ? form.querySelector('button[type=\"submit\"], input[type=\"submit\"]')
+          : document.querySelector('button[type=\"submit\"], input[type=\"submit\"]');
+        if (submitButton) {
+          submitButton.click();
+          return true;
+        }
+        if (form) {
+          form.submit();
+          return true;
+        }
+        return false;
+      })();
+    ''';
+    await _controller.runJavaScript(payload);
+  }
+
+  Future<bool> _runJsBool(String script) async {
+    final result = await _controller.runJavaScriptReturningResult(script);
+    if (result is bool) {
+      return result;
+    }
+    final normalized = result?.toString().toLowerCase();
+    return normalized == 'true';
+  }
+
+  String _escapeJsString(String value) {
+    return "'${value.replaceAll(r'\\', r'\\\\').replaceAll("'", r"\\'")}'";
   }
 
   Future<void> _loadHome() async {

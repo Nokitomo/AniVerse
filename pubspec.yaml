@@ -38,6 +38,7 @@ dependencies:
   permission_handler: ^11.3.1
   archive: ^3.3.7
   cupertino_icons: ^1.0.5
+  flutter_secure_storage: ^9.2.4
   flutter_meedu_videoplayer:
     git:
       url: https://github.com/aleeeee1/flutter_meedu_videoplayer.git
