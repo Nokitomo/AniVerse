@@ -41,9 +41,48 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "3:2608476301373105506",
+      "lastPropertyId": "6:8677296288055947739",
+      "name": "MediaModel",
+      "properties": [
+        {
+          "id": "1:4565039299679765809",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:7069373680955968020",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "3:602493944517988962",
+          "name": "imageUrl",
+          "type": 9
+        },
+        {
+          "id": "4:1159489261101867669",
+          "name": "episodeStr",
+          "type": 9
+        },
+        {
+          "id": "5:4302047779146209617",
+          "name": "lastSeenDate",
+          "type": 10
+        },
+        {
+          "id": "6:8677296288055947739",
+          "name": "lastSeenEpisodeIndex",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "2:3401344935020428400",
+  "lastEntityId": "3:2608476301373105506",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

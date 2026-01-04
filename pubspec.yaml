@@ -106,6 +106,7 @@ dependency_overrides:
   url_launcher_ios: ^6.3.1
   win32:
     path: ./third_party/win32
+  frontend_server_client: ^4.0.0
 
 flutter_launcher_icons:
   android: true

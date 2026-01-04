@@ -10,80 +10,136 @@
 import 'dart:typed_data';
 
 import 'package:flat_buffers/flat_buffers.dart' as fb;
-import 'package:objectbox/internal.dart'; // generated code can access "internal" functionality
-import 'package:objectbox/objectbox.dart';
+import 'package:objectbox/internal.dart'
+    as obx_int; // generated code can access "internal" functionality
+import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'helper/models/anime_model.dart';
+import 'helper/models/media_model.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
-final _entities = <ModelEntity>[
-  ModelEntity(
-      id: const IdUid(1, 7367005403000880625),
+final _entities = <obx_int.ModelEntity>[
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(1, 7367005403000880625),
       name: 'AnimeModel',
-      lastPropertyId: const IdUid(7, 2728967476925014044),
+      lastPropertyId: const obx_int.IdUid(7, 2728967476925014044),
       flags: 0,
-      properties: <ModelProperty>[
-        ModelProperty(
-            id: const IdUid(1, 8796504150628432932),
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 8796504150628432932),
             name: 'id',
             type: 6,
             flags: 129),
-        ModelProperty(
-            id: const IdUid(2, 2824869118085823400),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 2824869118085823400),
             name: 'title',
             type: 9,
             flags: 0),
-        ModelProperty(
-            id: const IdUid(3, 283857313078018381),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 283857313078018381),
             name: 'imageUrl',
             type: 9,
             flags: 0),
-        ModelProperty(
-            id: const IdUid(5, 7933586034001549577),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 7933586034001549577),
             name: 'lastSeenDate',
             type: 10,
             flags: 0),
-        ModelProperty(
-            id: const IdUid(6, 1811430557039642407),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 1811430557039642407),
             name: 'episodeStr',
             type: 9,
             flags: 0),
-        ModelProperty(
-            id: const IdUid(7, 2728967476925014044),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 2728967476925014044),
             name: 'lastSeenEpisodeIndex',
             type: 6,
             flags: 0)
       ],
-      relations: <ModelRelation>[],
-      backlinks: <ModelBacklink>[])
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(3, 2608476301373105506),
+      name: 'MediaModel',
+      lastPropertyId: const obx_int.IdUid(6, 8677296288055947739),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 4565039299679765809),
+            name: 'id',
+            type: 6,
+            flags: 129),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 7069373680955968020),
+            name: 'title',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 602493944517988962),
+            name: 'imageUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 1159489261101867669),
+            name: 'episodeStr',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 4302047779146209617),
+            name: 'lastSeenDate',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 8677296288055947739),
+            name: 'lastSeenEpisodeIndex',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[])
 ];
 
-/// Open an ObjectBox store with the model declared in this file.
-Future<Store> openStore(
-        {String? directory,
-        int? maxDBSizeInKB,
-        int? fileMode,
-        int? maxReaders,
-        bool queriesCaseSensitiveDefault = true,
-        String? macosApplicationGroup}) async =>
-    Store(getObjectBoxModel(),
-        directory: directory ?? (await defaultStoreDirectory()).path,
-        maxDBSizeInKB: maxDBSizeInKB,
-        fileMode: fileMode,
-        maxReaders: maxReaders,
-        queriesCaseSensitiveDefault: queriesCaseSensitiveDefault,
-        macosApplicationGroup: macosApplicationGroup);
+/// Shortcut for [Store.new] that passes [getObjectBoxModel] and for Flutter
+/// apps by default a [directory] using `defaultStoreDirectory()` from the
+/// ObjectBox Flutter library.
+///
+/// Note: for desktop apps it is recommended to specify a unique [directory].
+///
+/// See [Store.new] for an explanation of all parameters.
+///
+/// For Flutter apps, also calls `loadObjectBoxLibraryAndroidCompat()` from
+/// the ObjectBox Flutter library to fix loading the native ObjectBox library
+/// on Android 6 and older.
+Future<obx.Store> openStore(
+    {String? directory,
+    int? maxDBSizeInKB,
+    int? maxDataSizeInKB,
+    int? fileMode,
+    int? maxReaders,
+    bool queriesCaseSensitiveDefault = true,
+    String? macosApplicationGroup}) async {
+  await loadObjectBoxLibraryAndroidCompat();
+  return obx.Store(getObjectBoxModel(),
+      directory: directory ?? (await defaultStoreDirectory()).path,
+      maxDBSizeInKB: maxDBSizeInKB,
+      maxDataSizeInKB: maxDataSizeInKB,
+      fileMode: fileMode,
+      maxReaders: maxReaders,
+      queriesCaseSensitiveDefault: queriesCaseSensitiveDefault,
+      macosApplicationGroup: macosApplicationGroup);
+}
 
-/// ObjectBox model definition, pass it to [Store] - Store(getObjectBoxModel())
-ModelDefinition getObjectBoxModel() {
-  final model = ModelInfo(
+/// Returns the ObjectBox model definition for this project for use with
+/// [Store.new].
+obx_int.ModelDefinition getObjectBoxModel() {
+  final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(2, 3401344935020428400),
-      lastIndexId: const IdUid(0, 0),
-      lastRelationId: const IdUid(0, 0),
-      lastSequenceId: const IdUid(0, 0),
+      lastEntityId: const obx_int.IdUid(3, 2608476301373105506),
+      lastIndexId: const obx_int.IdUid(0, 0),
+      lastRelationId: const obx_int.IdUid(0, 0),
+      lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [3401344935020428400],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
@@ -97,8 +153,8 @@ ModelDefinition getObjectBoxModel() {
       modelVersionParserMinimum: 5,
       version: 1);
 
-  final bindings = <Type, EntityDefinition>{
-    AnimeModel: EntityDefinition<AnimeModel>(
+  final bindings = <Type, obx_int.EntityDefinition>{
+    AnimeModel: obx_int.EntityDefinition<AnimeModel>(
         model: _entities[0],
         toOneRelations: (AnimeModel object) => [],
         toManyRelations: (AnimeModel object) => {},
@@ -123,7 +179,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.finish(fbb.endTable());
           return object.id ?? 0;
         },
-        objectFromFB: (Store store, ByteData fbData) {
+        objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
           final lastSeenDateValue =
@@ -144,35 +200,109 @@ ModelDefinition getObjectBoxModel() {
                 .vTableGetNullable(buffer, rootOffset, 16);
 
           return object;
+        }),
+    MediaModel: obx_int.EntityDefinition<MediaModel>(
+        model: _entities[1],
+        toOneRelations: (MediaModel object) => [],
+        toManyRelations: (MediaModel object) => {},
+        getId: (MediaModel object) => object.id,
+        setId: (MediaModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (MediaModel object, fb.Builder fbb) {
+          final titleOffset =
+              object.title == null ? null : fbb.writeString(object.title!);
+          final imageUrlOffset = object.imageUrl == null
+              ? null
+              : fbb.writeString(object.imageUrl!);
+          final episodeStrOffset = fbb.writeString(object.episodeStr);
+          fbb.startTable(7);
+          fbb.addInt64(0, object.id ?? 0);
+          fbb.addOffset(1, titleOffset);
+          fbb.addOffset(2, imageUrlOffset);
+          fbb.addOffset(3, episodeStrOffset);
+          fbb.addInt64(4, object.lastSeenDate?.millisecondsSinceEpoch);
+          fbb.addInt64(5, object.lastSeenEpisodeIndex);
+          fbb.finish(fbb.endTable());
+          return object.id ?? 0;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final lastSeenDateValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 12);
+          final object = MediaModel()
+            ..id =
+                const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 4)
+            ..title = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 6)
+            ..imageUrl = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 8)
+            ..episodeStr = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 10, '')
+            ..lastSeenDate = lastSeenDateValue == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(lastSeenDateValue)
+            ..lastSeenEpisodeIndex = const fb.Int64Reader()
+                .vTableGetNullable(buffer, rootOffset, 14);
+
+          return object;
         })
   };
 
-  return ModelDefinition(model, bindings);
+  return obx_int.ModelDefinition(model, bindings);
 }
 
 /// [AnimeModel] entity fields to define ObjectBox queries.
 class AnimeModel_ {
   /// see [AnimeModel.id]
   static final id =
-      QueryIntegerProperty<AnimeModel>(_entities[0].properties[0]);
+      obx.QueryIntegerProperty<AnimeModel>(_entities[0].properties[0]);
 
   /// see [AnimeModel.title]
   static final title =
-      QueryStringProperty<AnimeModel>(_entities[0].properties[1]);
+      obx.QueryStringProperty<AnimeModel>(_entities[0].properties[1]);
 
   /// see [AnimeModel.imageUrl]
   static final imageUrl =
-      QueryStringProperty<AnimeModel>(_entities[0].properties[2]);
+      obx.QueryStringProperty<AnimeModel>(_entities[0].properties[2]);
 
   /// see [AnimeModel.lastSeenDate]
   static final lastSeenDate =
-      QueryIntegerProperty<AnimeModel>(_entities[0].properties[3]);
+      obx.QueryDateProperty<AnimeModel>(_entities[0].properties[3]);
 
   /// see [AnimeModel.episodeStr]
   static final episodeStr =
-      QueryStringProperty<AnimeModel>(_entities[0].properties[4]);
+      obx.QueryStringProperty<AnimeModel>(_entities[0].properties[4]);
 
   /// see [AnimeModel.lastSeenEpisodeIndex]
   static final lastSeenEpisodeIndex =
-      QueryIntegerProperty<AnimeModel>(_entities[0].properties[5]);
+      obx.QueryIntegerProperty<AnimeModel>(_entities[0].properties[5]);
+}
+
+/// [MediaModel] entity fields to define ObjectBox queries.
+class MediaModel_ {
+  /// see [MediaModel.id]
+  static final id =
+      obx.QueryIntegerProperty<MediaModel>(_entities[1].properties[0]);
+
+  /// see [MediaModel.title]
+  static final title =
+      obx.QueryStringProperty<MediaModel>(_entities[1].properties[1]);
+
+  /// see [MediaModel.imageUrl]
+  static final imageUrl =
+      obx.QueryStringProperty<MediaModel>(_entities[1].properties[2]);
+
+  /// see [MediaModel.episodeStr]
+  static final episodeStr =
+      obx.QueryStringProperty<MediaModel>(_entities[1].properties[3]);
+
+  /// see [MediaModel.lastSeenDate]
+  static final lastSeenDate =
+      obx.QueryDateProperty<MediaModel>(_entities[1].properties[4]);
+
+  /// see [MediaModel.lastSeenEpisodeIndex]
+  static final lastSeenEpisodeIndex =
+      obx.QueryIntegerProperty<MediaModel>(_entities[1].properties[5]);
 }
