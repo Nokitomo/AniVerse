@@ -1,5 +1,5 @@
-import 'package:aniverse/helper/streamingcommunity_api.dart';
 import 'package:aniverse/services/app_section_controller.dart';
+import 'package:aniverse/services/streaming_domain_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';

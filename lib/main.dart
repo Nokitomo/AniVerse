@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:aniverse/services/internal_db.dart';
 import 'package:aniverse/services/desktop_update.dart';
-import 'package:aniverse/services/sc_webview_client.dart';
 
 import 'package:flutter_meedu_videoplayer/meedu_player.dart';
 
@@ -38,8 +37,6 @@ void main() async {
   desktopUpdateService.startBackgroundChecks();
   Get.put(desktopUpdateService);
 
-  final scWebViewClient = ScWebViewClient();
-  Get.put(scWebViewClient);
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(

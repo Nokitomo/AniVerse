@@ -7,11 +7,9 @@ Stato e navigazione sono gestiti con GetX. La persistenza locale usa ObjectBox.
 ## Moduli principali
 - lib/helper/api.dart: richieste HTTP ad AnimeUnity, parsing e risoluzione URL episodi/stream.
 - lib/helper/classes/anime_obj.dart: mapping modelli e normalizzazione URL immagini.
-- lib/helper/streamingcommunity_api.dart: helper StreamingCommunity (endpoint, parsing Inertia, risoluzione stream).
-- lib/helper/classes/streamingcommunity_models.dart: modelli StreamingCommunity (media, stagioni, episodi).
 - lib/helper/models/media_model.dart: modello ObjectBox per film/serie (progresso visione).
 - lib/services/internal_api.dart: impostazioni app, lettura versione, import/export database.
-- lib/services/sc_webview_client.dart: WebView di supporto per StreamingCommunity (fetch JS, sessioni).
+- lib/services/streaming_domain_service.dart: risoluzione dominio StreamingCommunity per la WebView.
 - lib/services/internal_db.dart + lib/objectbox.g.dart: inizializzazione ObjectBox e modelli.
 - lib/ui/pages: schermate (home, esplora, calendario, archivio, dettagli, impostazioni, player, transizioni).
 - lib/ui/pages/sc_webview_page.dart: WebView principale per la sezione Film/Serie TV (StreamingCommunity) con whitelist domini.
