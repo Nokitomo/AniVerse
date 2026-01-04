@@ -70,6 +70,7 @@ Gli endpoint sono basati su dominio dinamico (via `domains.json`), con fallback 
 - Fonte domini: https://raw.githubusercontent.com/Arrowar/SC_Domains/refs/heads/main/domains.json
 - Chiave letta: `streamingcommunity.full_url`
 - Cache locale: 12 ore (SharedPreferences)
+- Fallback: se la home risponde 403 si prova il `old_domain` (stesso host con TLD precedente).
 
 ## Endpoint usati
 - Home payload (Inertia):

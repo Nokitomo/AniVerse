@@ -15,6 +15,7 @@ final InternalAPI internalAPI = Get.find<InternalAPI>();
 
 const Map<String, String> _defaultHeaders = {
   'Accept': 'application/json',
+  'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
   'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
 };
@@ -45,6 +46,51 @@ String _safeSnippet(String value, int max) {
     return value;
   }
   return value.substring(0, max);
+}
+
+Map<String, dynamic>? _readStreamingCommunityEntry(String? raw) {
+  if (raw == null || raw.isEmpty) {
+    return null;
+  }
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map && decoded['streamingcommunity'] is Map) {
+      return (decoded['streamingcommunity'] as Map).cast<String, dynamic>();
+    }
+  } catch (_) {
+    return null;
+  }
+  return null;
+}
+
+String? _buildAltDomain(String baseUrl, String altTld) {
+  if (altTld.trim().isEmpty) {
+    return null;
+  }
+  final uri = Uri.tryParse(baseUrl);
+  if (uri == null || uri.host.isEmpty) {
+    return null;
+  }
+  final parts = uri.host.split('.');
+  if (parts.length < 2) {
+    return null;
+  }
+  parts[parts.length - 1] = altTld.trim();
+  final newHost = parts.join('.');
+  return _normalizeBaseUrl(uri.replace(host: newHost).toString());
+}
+
+List<String> _buildBaseUrlCandidates({
+  required String primary,
+  Map<String, dynamic>? entry,
+}) {
+  final candidates = <String>[primary];
+  final oldDomain = entry?['old_domain']?.toString();
+  final alt = oldDomain != null ? _buildAltDomain(primary, oldDomain) : null;
+  if (alt != null && alt.isNotEmpty) {
+    candidates.add(alt);
+  }
+  return candidates.toSet().toList();
 }
 
 Map<String, dynamic> _extractDataPage(String html) {
@@ -94,17 +140,10 @@ Future<String> getStreamingCommunityBaseUrl() async {
   if (cachedRaw.isNotEmpty && cachedAt != null) {
     final delta = now.difference(cachedAt);
     if (delta <= _domainsCacheDuration) {
-      try {
-        final decoded = jsonDecode(cachedRaw);
-        if (decoded is Map && decoded['streamingcommunity'] is Map) {
-          final entry = decoded['streamingcommunity'] as Map;
-          final fullUrl = entry['full_url']?.toString();
-          if (fullUrl != null && fullUrl.isNotEmpty) {
-            return _normalizeBaseUrl(fullUrl);
-          }
-        }
-      } catch (_) {
-        // ignore cache parse errors
+      final entry = _readStreamingCommunityEntry(cachedRaw);
+      final fullUrl = entry?['full_url']?.toString();
+      if (fullUrl != null && fullUrl.isNotEmpty) {
+        return _normalizeBaseUrl(fullUrl);
       }
     }
   }
@@ -125,61 +164,82 @@ Future<String> getStreamingCommunityBaseUrl() async {
   }
 
   if (cachedRaw.isNotEmpty) {
-    try {
-      final decoded = jsonDecode(cachedRaw);
-      if (decoded is Map && decoded['streamingcommunity'] is Map) {
-        final entry = decoded['streamingcommunity'] as Map;
-        final fullUrl = entry['full_url']?.toString();
-        if (fullUrl != null && fullUrl.isNotEmpty) {
-          return _normalizeBaseUrl(fullUrl);
-        }
-      }
-    } catch (_) {
-      // ignore cache parse errors
+    final entry = _readStreamingCommunityEntry(cachedRaw);
+    final fullUrl = entry?['full_url']?.toString();
+    if (fullUrl != null && fullUrl.isNotEmpty) {
+      return _normalizeBaseUrl(fullUrl);
     }
   }
 
   return 'https://streamingcommunityz.gold';
 }
 
+Future<http.Response> _fetchHome(String baseUrl) async {
+  return http.get(Uri.parse('$baseUrl/'), headers: _defaultHeaders);
+}
+
 Future<ScHomePayload> fetchStreamingCommunityHome() async {
   final baseUrl = await getStreamingCommunityBaseUrl();
-  final response = await http.get(Uri.parse('$baseUrl/'), headers: _defaultHeaders);
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    debugPrint('SC home HTTP ${response.statusCode} from $baseUrl');
-    throw Exception('HTTP ${response.statusCode} for home');
+  final entry =
+      _readStreamingCommunityEntry(internalAPI.getKeyValue('sc_domains_cache'));
+  final candidates = _buildBaseUrlCandidates(primary: baseUrl, entry: entry);
+  http.Response? lastResponse;
+
+  for (final candidate in candidates) {
+    final response = await _fetchHome(candidate);
+    lastResponse = response;
+    if (response.statusCode == 403) {
+      debugPrint('SC home HTTP 403 from $candidate');
+      continue;
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      debugPrint('SC home HTTP ${response.statusCode} from $candidate');
+      throw Exception('HTTP ${response.statusCode} for home');
+    }
+    try {
+      final data = _extractDataPage(response.body);
+      final props = data['props'] is Map
+          ? (data['props'] as Map).cast<String, dynamic>()
+          : <String, dynamic>{};
+      final slidersRaw = props['sliders'];
+      final slideBannersRaw = props['slideBanners'];
+
+      final sliders = slidersRaw is List
+          ? slidersRaw
+              .whereType<Map>()
+              .map((item) =>
+                  ScHomeSlider.fromJson(item.cast<String, dynamic>()))
+              .toList()
+          : const <ScHomeSlider>[];
+      final slideBanners = slideBannersRaw is List
+          ? slideBannersRaw
+              .whereType<Map>()
+              .map((item) =>
+                  ScSlideBanner.fromJson(item.cast<String, dynamic>()))
+              .toList()
+          : const <ScSlideBanner>[];
+      final genres = props['genres'] is List ? props['genres'] as List : const [];
+
+      return ScHomePayload(
+        version: data['version']?.toString() ?? '',
+        appUrl: props['app_url']?.toString() ?? candidate,
+        cdnUrl: props['cdn_url']?.toString() ?? '',
+        scwsUrl: props['scws_url']?.toString() ?? '',
+        sliders: sliders,
+        slideBanners: slideBanners,
+        genres: genres,
+        raw: data,
+      );
+    } catch (error) {
+      debugPrint('SC home parse error from $candidate: $error');
+      debugPrint(_safeSnippet(response.body, 400));
+      rethrow;
+    }
   }
 
-  Map<String, dynamic> data;
-  try {
-    data = _extractDataPage(response.body);
-  } catch (error) {
-    debugPrint('SC home parse error from $baseUrl: $error');
-    debugPrint(_safeSnippet(response.body, 400));
-    rethrow;
-  }
-  final props = data['props'] is Map ? (data['props'] as Map).cast<String, dynamic>() : <String, dynamic>{};
-  final slidersRaw = props['sliders'];
-  final slideBannersRaw = props['slideBanners'];
-
-  final sliders = slidersRaw is List
-      ? slidersRaw.whereType<Map>().map((item) => ScHomeSlider.fromJson(item.cast<String, dynamic>())).toList()
-      : const <ScHomeSlider>[];
-  final slideBanners = slideBannersRaw is List
-      ? slideBannersRaw.whereType<Map>().map((item) => ScSlideBanner.fromJson(item.cast<String, dynamic>())).toList()
-      : const <ScSlideBanner>[];
-  final genres = props['genres'] is List ? props['genres'] as List : const [];
-
-  return ScHomePayload(
-    version: data['version']?.toString() ?? '',
-    appUrl: props['app_url']?.toString() ?? baseUrl,
-    cdnUrl: props['cdn_url']?.toString() ?? '',
-    scwsUrl: props['scws_url']?.toString() ?? '',
-    sliders: sliders,
-    slideBanners: slideBanners,
-    genres: genres,
-    raw: data,
-  );
+  final status = lastResponse?.statusCode ?? 0;
+  debugPrint('SC home failed, last status=$status, base=$baseUrl');
+  throw Exception('HTTP $status for home');
 }
 
 Future<ScHomeSlider> fetchStreamingCommunitySlider(String name) async {
